@@ -5,6 +5,10 @@ const app = express()
 const PORT = process.env.PORT || 3000
 
 app.use(express.json())
+
+app.use(express.static('public'))
+
+// API routes
 app.use('/api', inventoryRoutes)
 
 app.listen(PORT, () => {

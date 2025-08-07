@@ -33,41 +33,30 @@ router.post('/items', async (req, res) => {
   }
 })
 
-router.patch('/items/:name', async (req, res) => {
-  const { name } = req.params
-  const { amount } = req.body
+// PATCH /items/:id — full update (name, quantity, unit)
+router.patch('/items/:id', async (req, res) => {
+  const { id } = req.params
+  const { name, quantity, unit } = req.body
 
-  if (typeof amount !== 'number') {
-    return res.status(400).json({ error: 'Amount must be a number' })
+  if (!name || typeof quantity !== 'number' || !unit) {
+    return res.status(400).json({ error: 'Name, quantity, and unit are required' })
   }
 
   const db = await getDb()
 
   try {
-    // Get current item
-    const existingItem = await db.get(
-      `SELECT * FROM inventory WHERE LOWER(name) = LOWER(?)`,
-      [name]
+    const result = await db.run(
+      `UPDATE inventory
+       SET name = ?, quantity = ?, unit = ?, lastUpdated = ?
+       WHERE id = ?`,
+      [name, quantity, unit, new Date().toISOString(), id]
     )
 
-    if (!existingItem) {
+    if (result.changes === 0) {
       return res.status(404).json({ error: 'Item not found' })
     }
 
-    // Update quantity and timestamp
-    const updated = updateQuantity(existingItem, amount)
-
-    await db.run(
-      `UPDATE inventory SET quantity = ?, lastUpdated = ? WHERE id = ?`,
-      [updated.quantity, updated.lastUpdated, existingItem.id]
-    )
-
-    res.json({
-      id: existingItem.id,
-      name: existingItem.name,
-      unit: existingItem.unit,
-      ...updated
-    })
+    res.json({ message: `Updated item with ID ${id}` })
   } catch (err) {
     console.error('Failed to update item:', err)
     res.status(500).json({ error: 'Internal server error' })
@@ -86,21 +75,21 @@ router.get('/items', async (req, res) => {
   }
 })
 
-router.delete('/items/:name', async (req, res) => {
-  const { name } = req.params
+router.delete('/items/:id', async (req, res) => {
+  const { id } = req.params
   const db = await getDb()
 
   try {
     const result = await db.run(
-      `DELETE FROM inventory WHERE LOWER(name) = LOWER(?)`,
-      [name]
+      `DELETE FROM inventory WHERE id = ?`,
+      [id]
     )
 
     if (result.changes === 0) {
       return res.status(404).json({ error: 'Item not found' })
     }
 
-    res.json({ message: `Deleted item '${name}'` })
+    res.json({ message: `Deleted item with ID ${id}` })
   } catch (err) {
     console.error('Failed to delete item:', err)
     res.status(500).json({ error: 'Internal server error' })
