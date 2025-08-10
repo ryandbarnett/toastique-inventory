@@ -2,34 +2,24 @@ import { describe, it, expect } from 'vitest'
 import { createItem, updateQuantity } from '../utils/inventoryLogic.js'
 
 describe('createItem', () => {
-  it('creates an item with name, quantity, and unit', () => {
+  it('creates a plain item object with name, quantity, and unit (no timestamp)', () => {
     const item = createItem('Bananas', 12, 'lbs')
     expect(item).toMatchObject({
       name: 'Bananas',
       quantity: 12,
       unit: 'lbs'
     })
-    expect(typeof item.lastUpdated).toBe('string')
+    expect(item.lastUpdated).toBeUndefined()
   })
 
-  it('defaults quantity to 0 if not provided', () => {
+  it('defaults quantity to 0 if not provided (no timestamp)', () => {
     const item = createItem('Almond Milk', undefined, 'qt')
     expect(item).toMatchObject({
       name: 'Almond Milk',
       quantity: 0,
       unit: 'qt'
     })
-    expect(typeof item.lastUpdated).toBe('string')
-  })
-
-  it('includes a lastUpdated timestamp', () => {
-    const before = Date.now()
-    const item = createItem('Avocados', 5, 'pcs')
-    const after = Date.now()
-
-    const timestamp = new Date(item.lastUpdated).getTime()
-    expect(timestamp).toBeGreaterThanOrEqual(before)
-    expect(timestamp).toBeLessThanOrEqual(after)
+    expect(item.lastUpdated).toBeUndefined()
   })
 })
 

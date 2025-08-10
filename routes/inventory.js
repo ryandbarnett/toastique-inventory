@@ -1,3 +1,5 @@
+// File: routes/inventory.js
+
 import express from 'express'
 import { createItem, updateQuantity } from '../utils/inventoryLogic.js'
 import { getDb } from '../utils/db.js'
@@ -5,30 +7,19 @@ import { getDb } from '../utils/db.js'
 const router = express.Router()
 
 router.post('/items', async (req, res) => {
-  const { name, quantity, unit } = req.body
-
-  if (!name || !unit) {
-    return res.status(400).json({ error: 'Name and unit are required' })
-  }
-
   const db = await getDb()
-
-  const newItem = createItem(name, quantity, unit)
-
   try {
+    const { name, quantity, unit } = req.body
+    const item = createItem(name, quantity, unit)
+    const lastUpdated = new Date().toISOString()
     const result = await db.run(
-      `INSERT INTO inventory (name, quantity, unit, lastUpdated)
-       VALUES (?, ?, ?, ?)`,
-      [newItem.name, newItem.quantity, newItem.unit, newItem.lastUpdated]
+      `INSERT INTO inventory (name, quantity, unit, lastUpdated) VALUES (?,?,?,?)`,
+      [item.name, item.quantity, item.unit, lastUpdated]
     )
-
-    // Include DB-assigned ID in the response
-    res.status(201).json({
-      id: result.lastID,
-      ...newItem
-    })
+    const row = await db.get(`SELECT * FROM inventory WHERE id = ?`, [result.lastID])
+    res.status(201).json(row)
   } catch (err) {
-    console.error('Failed to insert item:', err)
+    console.error('Failed to create item:', err)
     res.status(500).json({ error: 'Internal server error' })
   }
 })
@@ -55,8 +46,8 @@ router.patch('/items/:id', async (req, res) => {
     if (result.changes === 0) {
       return res.status(404).json({ error: 'Item not found' })
     }
-
-    res.json({ message: `Updated item with ID ${id}` })
+    const row = await db.get(`SELECT * FROM inventory WHERE id = ?`, [id])
+    res.json(row)
   } catch (err) {
     console.error('Failed to update item:', err)
     res.status(500).json({ error: 'Internal server error' })
