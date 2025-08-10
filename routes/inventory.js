@@ -1,15 +1,18 @@
 // File: routes/inventory.js
 
 import express from 'express'
-import { createItem, updateQuantity } from '../utils/inventoryLogic.js'
+import { createItem } from '../utils/inventoryLogic.js'
 import { getDb } from '../utils/db.js'
+import { normalizeItemInput } from '../utils/normalize.js'
 
 const router = express.Router()
 
 router.post('/items', async (req, res) => {
   const db = await getDb()
   try {
-    const { name, quantity, unit } = req.body
+    const check = normalizeItemInput(req.body)
+    if (!check.ok) return res.status(400).json({ error: check.error })
+    const { name, quantity, unit } = check.value
     const item = createItem(name, quantity, unit)
     const lastUpdated = new Date().toISOString()
     const result = await db.run(
@@ -27,11 +30,9 @@ router.post('/items', async (req, res) => {
 // PATCH /items/:id — full update (name, quantity, unit)
 router.patch('/items/:id', async (req, res) => {
   const { id } = req.params
-  const { name, quantity, unit } = req.body
-
-  if (!name || typeof quantity !== 'number' || !unit) {
-    return res.status(400).json({ error: 'Name, quantity, and unit are required' })
-  }
+  const check = normalizeItemInput(req.body)
+  if (!check.ok) return res.status(400).json({ error: check.error })
+  const { name, quantity, unit } = check.value
 
   const db = await getDb()
 
