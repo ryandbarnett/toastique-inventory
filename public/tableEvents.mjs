@@ -1,10 +1,16 @@
 // public/tableEvents.mjs
 import { getItems, patchItem, deleteItem, createItem } from './api.mjs';
 import { renderItems } from './renderInventoryTable.mjs';
+import { showBanner } from './domUtils.mjs';
 
 async function refresh(container) {
-  const items = await getItems();
-  renderItems(items, container);
+  try {
+    const items = await getItems();
+    renderItems(items, container);
+  } catch (err) {
+    console.error('Refresh failed:', err);
+    showBanner(container, 'Failed to refresh inventory. Please try again.', { variant: 'error' });
+  }
 }
 
 export function bindTableDelegation(container) {
@@ -53,6 +59,7 @@ export function bindTableDelegation(container) {
           unit: unitInput?.value ?? ''
         });
         await refresh(container);
+        showBanner(container, 'Item updated.', { variant: 'success', timeout: 2500 });
         return;
       }
       if (action === 'delete') {
@@ -60,11 +67,13 @@ export function bindTableDelegation(container) {
         if (!confirm(`Delete "${nameText}" from inventory?`)) return;
         await deleteItem(id);
         await refresh(container);
+        showBanner(container, 'Item deleted.', { variant: 'success', timeout: 2500 });
         return;
       }
     } catch (err) {
       console.error(`Action "${action}" failed for id=${id}:`, err);
-      alert(`Failed to ${action} item.`);
+      const msg = err instanceof Error ? err.message : `Failed to ${action} item.`;
+      showBanner(container, msg, { variant: 'error' });
     }
   });
 }
@@ -80,11 +89,13 @@ export function handleAddItem(form, container) {
       await createItem({ name, quantity, unit });
       await refresh(container);
       form.reset();
+      showBanner(container, 'Item added.', { variant: 'success', timeout: 2500 });
     } catch (err) {
       console.error('Error adding item:', err);
-      alert('Failed to add item.');
+      const msg = err instanceof Error ? err.message : 'Failed to add item.';
+      showBanner(container, msg, { variant: 'error' });
     }
   });
 }
 
-export { refresh }; // optional, if you want manual refresh elsewhere
+export { refresh };

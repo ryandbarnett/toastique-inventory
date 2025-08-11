@@ -236,6 +236,42 @@ describe('event delegation & actions', () => {
     expect(globalThis.fetch.mock.calls[0][1]).toMatchObject({ method: 'DELETE' })
     expect(globalThis.fetch.mock.calls[1][0]).toBe('/api/items')
   })
+
+  it('shows an error banner when PATCH fails', async () => {
+    setupFormUI()
+    const table = document.getElementById('inventory')
+    const tbody = table.querySelector('tbody')
+
+    // Render one row and bind delegation
+    renderItems([{ id: 7, name: 'Eggs', quantity: 12, unit: 'pcs', lastUpdated: null }], table)
+    const { bindTableDelegation } = await import('../../public/tableEvents.mjs')
+    bindTableDelegation(table)
+
+    // First fetch call: PATCH fails; ensure no extra calls after failure
+    globalThis.fetch = vi.fn()
+      .mockResolvedValueOnce({ ok: false, status: 500, statusText: 'Server Error', json: () => Promise.resolve({}) })
+
+    // Click Edit -> change -> Save
+    tbody.querySelector('button[data-action="edit"]').click()
+    const [nameInput, qtyInput, unitInput] = tbody.querySelectorAll('input.edit')
+    nameInput.value = 'Eggs XL'
+    qtyInput.value = '24'
+    unitInput.value = 'pcs'
+    tbody.querySelector('button[data-action="save"]').click()
+
+    await new Promise(res => setTimeout(res, 10))
+
+    // Assert PATCH attempted
+    expect(globalThis.fetch).toHaveBeenCalledTimes(1)
+    expect(globalThis.fetch.mock.calls[0][0]).toBe('/api/items/7')
+
+    // Assert a banner showed up (no alert())
+    expect(globalThis.alert).toBeDefined()
+    expect(globalThis.alert).not.toHaveBeenCalled()
+    const area = document.querySelector('[data-ui="status-area"]')
+    expect(area).toBeTruthy()
+    expect(area.textContent).toMatch(/failed|error|server error/i)
+  })
 })
 
 describe('safety and formatting', () => {
@@ -261,3 +297,4 @@ describe('safety and formatting', () => {
     expect(tdDate.textContent).toBe('') // fmtDate(null) -> ''
   })
 })
+
