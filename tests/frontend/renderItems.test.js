@@ -15,6 +15,7 @@ function setupInventoryTable() {
           <th>Name</th>
           <th>Quantity</th>
           <th>Unit</th>
+          <th>PAR</th>
           <th>Last Updated</th>
           <th>Actions</th>
         </tr>
@@ -30,11 +31,14 @@ function setupFormUI() {
       <input type="text" id="name" />
       <input type="number" id="quantity" />
       <input type="text" id="unit" />
+      <input type="number" id="par" />
       <button type="submit">Add</button>
     </form>
     <table id="inventory">
       <thead>
-        <tr><th>Name</th><th>Quantity</th><th>Unit</th><th>Last Updated</th><th>Actions</th></tr>
+        <tr>
+          <th>Name</th><th>Quantity</th><th>Unit</th><th>PAR</th><th>Last Updated</th><th>Actions</th>
+        </tr>
       </thead>
       <tbody></tbody>
     </table>
@@ -77,7 +81,7 @@ describe('renderItems', () => {
 })
 
 describe('frontend inventory UI', () => {
-  let form, nameInput, quantityInput, unitInput, table, tbody
+  let form, nameInput, quantityInput, unitInput, parInput, table
 
   beforeEach(() => {
     setupFormUI()
@@ -85,8 +89,8 @@ describe('frontend inventory UI', () => {
     nameInput = document.getElementById('name')
     quantityInput = document.getElementById('quantity')
     unitInput = document.getElementById('unit')
+    parInput = document.getElementById('par')
     table = document.getElementById('inventory')
-    tbody = table.querySelector('tbody')
 
     // Default mocks
     globalThis.fetch = vi.fn().mockResolvedValue({
@@ -101,6 +105,7 @@ describe('frontend inventory UI', () => {
     nameInput.value = 'Bananas'
     quantityInput.value = '10'
     unitInput.value = 'lbs'
+    parInput.value = '3'
 
     handleAddItem(form, table)
     form.dispatchEvent(new Event('submit', { bubbles: true }))
@@ -114,6 +119,7 @@ describe('frontend inventory UI', () => {
     expect(nameInput.value).toBe('')
     expect(quantityInput.value).toBe('')
     expect(unitInput.value).toBe('')
+    expect(parInput.value).toBe('')
   })
 })
 
@@ -189,6 +195,7 @@ describe('event delegation & actions', () => {
     inputs[0].value = 'Key Limes'
     inputs[1].value = '7'
     inputs[2].value = 'pcs'
+    // inputs[3] is PAR; leave default 0 (as rendered)
 
     // Mock PATCH then GET (refresh)
     globalThis.fetch
@@ -205,7 +212,7 @@ describe('event delegation & actions', () => {
       headers: { 'Content-Type': 'application/json' }
     })
     const sentBody = JSON.parse(globalThis.fetch.mock.calls[0][1].body)
-    expect(sentBody).toEqual({ name: 'Key Limes', quantity: 7, unit: 'pcs' })
+    expect(sentBody).toEqual({ name: 'Key Limes', quantity: 7, unit: 'pcs', par: 0 })
 
     // Second call: GET
     expect(globalThis.fetch.mock.calls[1][0]).toBe('/api/items')
@@ -293,8 +300,8 @@ describe('safety and formatting', () => {
     const table = document.getElementById('inventory')
     renderItems([{ id: 1, name: 'Test', quantity: 1, unit: 'x', lastUpdated: null }], table)
 
-    const tdDate = table.querySelector('tbody tr td:nth-child(4)')
+    // Date moved to column 5 (Name, Qty, Unit, PAR, Date, Actions)
+    const tdDate = table.querySelector('tbody tr td:nth-child(5)')
     expect(tdDate.textContent).toBe('') // fmtDate(null) -> ''
   })
 })
-
