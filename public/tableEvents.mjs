@@ -28,7 +28,7 @@ export function bindTableDelegation(container) {
 
     const inputs = tr.querySelectorAll('input.edit');
     const statics = tr.querySelectorAll('span.static');
-    const [nameInput, qtyInput, unitInput] = inputs;
+    const [nameInput, qtyInput, unitInput, parInput] = inputs;
 
     const toggleEdit = (editing) => {
       inputs.forEach(i => i.classList.toggle('hidden', !editing));
@@ -45,10 +45,11 @@ export function bindTableDelegation(container) {
         return;
       }
       if (action === 'cancel') {
-        const [nameStatic, qtyStatic, unitStatic] = statics;
+        const [nameStatic, qtyStatic, unitStatic, parStatic] = statics;
         if (nameInput && nameStatic) nameInput.value = nameStatic.textContent ?? '';
         if (qtyInput && qtyStatic) qtyInput.value = qtyStatic.textContent ?? '';
         if (unitInput && unitStatic) unitInput.value = unitStatic.textContent ?? '';
+        if (parInput && parStatic) parInput.value = parStatic.textContent ?? '';
         toggleEdit(false);
         return;
       }
@@ -56,7 +57,8 @@ export function bindTableDelegation(container) {
         await patchItem(id, {
           name: nameInput?.value ?? '',
           quantity: Number(qtyInput?.value ?? 0),
-          unit: unitInput?.value ?? ''
+          unit: unitInput?.value ?? '',
+          par: Number(parInput?.value ?? 0),
         });
         await refresh(container);
         showBanner(container, 'Item updated.', { variant: 'success', timeout: 2500 });
@@ -84,9 +86,10 @@ export function handleAddItem(form, container) {
     const name = form.querySelector('#name').value;
     const quantity = Number(form.querySelector('#quantity').value);
     const unit = form.querySelector('#unit').value;
+    const par = Number(form.querySelector('#par').value);
 
     try {
-      await createItem({ name, quantity, unit });
+      await createItem({ name, quantity, unit, par });
       await refresh(container);
       form.reset();
       showBanner(container, 'Item added.', { variant: 'success', timeout: 2500 });
@@ -99,3 +102,4 @@ export function handleAddItem(form, container) {
 }
 
 export { refresh };
+
