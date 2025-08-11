@@ -1,3 +1,4 @@
+// scripts/initDb.js
 import { getDb } from '../utils/db.js'
 
 const db = await getDb()
