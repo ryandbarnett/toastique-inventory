@@ -123,6 +123,39 @@ tbody tr:hover {
   background-color: #ebebeb;
 }
 
+/* Strong Low-stock highlight */
+#inventory tbody tr[data-low-stock="1"] {
+  background: #ffe1e1 !important; /* beat zebra & hover */
+  color: #7f1d1d;
+  box-shadow: inset 6px 0 0 #dc2626; /* left accent bar */
+}
+
+#inventory tbody tr[data-low-stock="1"]:hover {
+  background: #ffd4d4 !important;
+}
+
+#inventory tbody tr[data-low-stock="1"] td {
+  border-bottom-color: #fecaca;
+}
+
+/* Make the quantity stand out a bit */
+#inventory tbody tr[data-low-stock="1"] td:nth-child(2) {
+  font-weight: 600;
+}
+
+/* Tiny badge in the PAR column (col 4) */
+#inventory tbody tr[data-low-stock="1"] td:nth-child(4)::after {
+  content: 'Below PAR';
+  margin-left: 8px;
+  font-size: 0.75rem;
+  padding: 2px 6px;
+  border-radius: 10px;
+  background: #fee2e2;
+  color: #991b1b;
+  border: 1px solid #fecaca;
+  vertical-align: middle;
+}
+
 .hidden {
   display: none;
 }

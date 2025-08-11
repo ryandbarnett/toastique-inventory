@@ -18,15 +18,20 @@
     </div>
   </header>
 
-
   <main>
     <form id="add-item-form">
       <label for="name">Item Name</label>
       <input type="text" id="name" placeholder="Item name" required />
+
       <label for="quantity">Quantity</label>
       <input type="number" id="quantity" placeholder="Quantity" />
+
       <label for="unit">Unit</label>
       <input type="text" id="unit" placeholder="Unit (e.g. lbs)" required />
+
+      <label for="par">PAR</label>
+      <input type="number" id="par" placeholder="Reorder level" min="0" step="any" required />
+
       <button type="submit">Add Item</button>
     </form>
 
@@ -37,7 +42,9 @@
           <th>Item</th>
           <th>Quantity</th>
           <th>Unit</th>
+          <th>PAR</th>
           <th>Last Updated</th>
+          <th>Actions</th>
         </tr>
       </thead>
       <tbody>

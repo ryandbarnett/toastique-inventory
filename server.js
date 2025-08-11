@@ -1,3 +1,5 @@
+// server.js
+
 import express from 'express'
 import inventoryRoutes from './routes/inventory.js'
 
