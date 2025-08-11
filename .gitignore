@@ -3,3 +3,7 @@ db.sqlite
 .env
 .DS_Store
 **/.DS_Store
+# SQLite sidecars
+db.sqlite-shm
+db.sqlite-wal
+db.sqlite-journal
