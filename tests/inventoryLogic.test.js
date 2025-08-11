@@ -1,3 +1,5 @@
+// tests/inventoryLogic.test.js
+
 import { describe, it, expect } from 'vitest'
 import { createItem, updateQuantity } from '../utils/inventoryLogic.js'
 
