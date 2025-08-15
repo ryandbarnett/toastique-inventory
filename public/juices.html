@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Juice Counts</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <h1>Juice Counts</h1>
+    <p id="status" class="badge">Loading…</p>
+
+    <table id="juices" aria-describedby="status">
+      <thead>
+        <tr>
+          <th>Juice</th>
+          <th>PAR (L)</th>
+          <th>Today (L)</th>
+          <th>Last updated</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+
+    <script type="module" src="./juices.mjs"></script>
+  </body>
+</html>
