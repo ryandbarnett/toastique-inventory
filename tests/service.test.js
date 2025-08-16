@@ -22,10 +22,14 @@ describe('service.createBatch', () => {
   })
 
   it('creates from size multiplier and recipe yields', async () => {
-    const batch = await service.createBatch(1, { size: '1.5x' })
+    const batch = await service.createBatch(1, { size: 1.5 })
     expect(batch.remainingLiters).toBeGreaterThan(0)
     expect(new Date(batch.madeAt).toString()).not.toBe('Invalid Date')
     expect(new Date(batch.expiresAt).toString()).not.toBe('Invalid Date')
+  })
+
+  it('rejects non-numeric sizes', async () => {
+    await expect(service.createBatch(1, { size: '1.5x' })).rejects.toThrow(/size must be 1 or 1\.5/i)
   })
 })
 
