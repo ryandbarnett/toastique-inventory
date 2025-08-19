@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach } from 'vitest'
 import { makeTestDb, seedJuices } from './helpers/testDb.js'
-import * as repo from '../lib/repo.js'
-import * as service from '../lib/service.js'
+import * as repo from '../lib/repo/index.js'
+import * as service from '../lib/service/index.js'
 
 // monkey-patch repo.getDb to return our test db
 let db

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { computeJuiceStatus } from '../lib/status.js'
+import { computeJuiceStatus } from '../lib/status/index.js'
 
 const now = new Date('2025-08-16T12:00:00.000Z')
 

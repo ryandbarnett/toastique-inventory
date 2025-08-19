@@ -1,6 +1,6 @@
 // routes/juices.js
 import express from 'express'
-import { listJuicesWithStatus, addJuiceCount, createBatch } from '../lib/service.js'
+import { listJuicesWithStatus, addJuiceCount, createBatch } from '../lib/service/index.js'
 const router = express.Router()
 
 router.get('/juices', async (_req, res) => {

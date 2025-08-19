@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach } from 'vitest'
 import request from 'supertest'
 import { createApp } from '../app.js'
 import { makeTestDb, seedJuices } from './helpers/testDb.js'
-import * as repo from '../lib/repo.js'
+import * as repo from '../lib/repo/index.js'
 
 let app, db
 repo.getDb = async () => db

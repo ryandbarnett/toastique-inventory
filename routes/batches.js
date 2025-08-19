@@ -1,6 +1,6 @@
 // routes/batches.js
 import express from 'express'
-import { updateBatch } from '../lib/service.js'
+import { updateBatch } from '../lib/service/index.js'
 const router = express.Router()
 
 router.patch('/batches/:batchId', async (req, res) => {
