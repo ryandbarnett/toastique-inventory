@@ -1,18 +1,23 @@
 // routes/batches.js
 import express from 'express'
-import { updateBatch } from '../lib/service/index.js'
-const router = express.Router()
 
-router.patch('/batches/:batchId', async (req, res) => {
-  try {
-    const bid = Number(req.params.batchId)
-    const updated = await updateBatch(bid, req.body || {})
-    res.json({ ok: true, batch: updated })
-  } catch (err) {
-    const msg = err instanceof Error ? err.message : 'Internal server error'
-    const code = /not found|invalid|must be|date/i.test(msg) ? 400 : 500
-    res.status(code).json({ error: msg })
-  }
-})
+/**
+ * @param {{ updateBatch:Function }} service
+ */
+export default function batchesRouter(service) {
+  const router = express.Router()
 
-export default router
+  router.patch('/batches/:id', async (req, res) => {
+    try {
+      const id = Number(req.params.id)
+      const updated = await service.updateBatch(id, req.body || {})
+      res.json({ ok: true, batch: updated })
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : 'Internal server error'
+      const code = /not found|invalid|required|date|updatable/i.test(msg) ? 400 : 500
+      res.status(code).json({ error: msg })
+    }
+  })
+
+  return router
+}

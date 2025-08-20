@@ -11,9 +11,13 @@ export async function makeTestDb() {
 
 export async function seedJuices(db) {
   await db.exec(`
-    INSERT INTO juices (id, name, par_liters, display_order) VALUES
+    INSERT OR IGNORE INTO juices (id, name, par_liters, display_order) VALUES
       (1, 'Balance', 6, 1),
       (2, 'Recharge', 6, 2),
-      (3, 'Metabolize', 6, 3);
+      (3, 'Metabolize', 6, 3),
+      (4, 'Radiance', 6, 4),
+      (5, 'Cure', 6, 5),
+      (6, 'Defender', 6, 6),
+      (7, 'Pitaya Lemonade', 6, 7);
   `)
 }

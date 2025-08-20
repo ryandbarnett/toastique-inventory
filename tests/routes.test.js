@@ -1,16 +1,25 @@
-import { describe, it, expect, beforeEach } from 'vitest'
+import { describe, it, expect, beforeEach, afterEach } from 'vitest'
 import request from 'supertest'
 import { createApp } from '../app.js'
 import { makeTestDb, seedJuices } from './helpers/testDb.js'
-import * as repo from '../lib/repo/index.js'
+import { makeRepo } from '../lib/repo/index.js'
+import { makeService } from '../lib/service/index.js'
 
-let app, db
-repo.getDb = async () => db
+let db, repo, service, app
 
 beforeEach(async () => {
   db = await makeTestDb()
   await seedJuices(db)
-  app = createApp()
+  repo = makeRepo({ getDb: async () => db })
+  service = makeService(repo)
+  app = createApp({ service })
+})
+
+afterEach(async () => {
+  // optional but nice: close the test DB if your helper returns a real sqlite handle
+  if (db && typeof db.close === 'function') {
+    await db.close()
+  }
 })
 
 describe('GET /api/juices', () => {
