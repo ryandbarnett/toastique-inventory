@@ -36,7 +36,7 @@ INSERT OR IGNORE INTO juices (name, default_batch_liters, par_liters, expiry_day
   ('Lemon Juice',       1.89, NULL, 10),
   ('Lime Juice',        3.79, NULL, 10),
   ('Metabolize',        4.73, NULL, 7),
-  ('Pitaya Lemonade',    NULL, NULL, 7),
+  ('Pitaya Lemonade',   3.79, NULL, 7),
   ('Radiance',          5.68, NULL, 7),
   ('Recharge',          4.73, NULL, 7),
   ('Summer Seasonal',    NULL, NULL, 7);

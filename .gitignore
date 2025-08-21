@@ -1,9 +1,13 @@
+# deps
 node_modules/
+
+# local DB (and sidecars)
 db.sqlite
-.env
-.DS_Store
-**/.DS_Store
-# SQLite sidecars
 db.sqlite-shm
 db.sqlite-wal
 db.sqlite-journal
+# (or just use one line: db.sqlite*)
+
+# env + OS cruft
+.env
+.DS_Store
