@@ -1,12 +1,9 @@
 # deps
 node_modules/
 
-# local DB (and sidecars)
-db.sqlite
-db.sqlite-shm
-db.sqlite-wal
-db.sqlite-journal
-# (or just use one line: db.sqlite*)
+# local DB and sidecars
+*.db
+db.sqlite*
 
 # env + OS cruft
 .env
