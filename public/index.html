@@ -34,11 +34,29 @@
 					  <th>Default Batch (qt | L)</th>
 					  <th>PAR (qt | L)</th>
 					  <th>Expiry (days)</th>
+            <th>Latest Check</th>
+            <th>Status</th>
 					</tr>
         </thead>
         <tbody></tbody>
       </table>
     </section>
+
+    <div class="controls" style="margin-top: 0.5rem;">
+      <label>
+        Shift:
+        <select id="shiftSelect">
+          <option>AM</option>
+          <option>PM</option>
+          <option>OTHER</option>
+        </select>
+      </label>
+      <label>
+        Liters now:
+        <input id="checkLiters" type="number" step="0.1" min="0" placeholder="e.g. 5.0" />
+      </label>
+      <button id="recordCheckBtn">Record Check</button>
+    </div>
 
     <section>
       <h2>Active Batches</h2>

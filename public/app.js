@@ -14,16 +14,52 @@ const fmtDate = (iso) =>
     day: 'numeric',
     year: '2-digit'
   }).format(new Date(iso))
+const fmtDateTime = (iso) =>
+  new Intl.DateTimeFormat('en-US', {
+    timeZone: 'America/Los_Angeles',
+    month: 'numeric',
+    day: 'numeric',
+    year: '2-digit',
+    hour: 'numeric',
+    minute: '2-digit',
+    hour12: true,
+  }).format(new Date(iso))
 const daysLeft = (iso) => Math.max(0, Math.ceil((new Date(iso) - Date.now()) / 86400000))
 
 const juiceSelect = document.getElementById('juiceSelect')
-const batchLiters = document.getElementById('batchLiters')
 const createBatchBtn = document.getElementById('createBatchBtn')
 const juicesTbody = document.querySelector('#juicesTable tbody')
 const batchesTbody = document.querySelector('#batchesTable tbody')
 const batchesEmpty = document.getElementById('batchesEmpty')
 const batchMultiple = document.getElementById('batchMultiple')
 const batchCalc = document.getElementById('batchCalc')
+const shiftSelect = document.getElementById('shiftSelect')
+const checkLiters = document.getElementById('checkLiters')
+const recordCheckBtn = document.getElementById('recordCheckBtn')
+
+if (recordCheckBtn) {
+  recordCheckBtn.addEventListener('click', async () => {
+    const juice_name = juiceSelect.value
+    const liters = Number(checkLiters.value || 'NaN')
+    const shift = shiftSelect.value
+    if (!Number.isFinite(liters) || liters < 0) {
+      alert('Enter a non-negative liters value (e.g., 5.0)')
+      return
+    }
+    try {
+      await fetchJSON('/api/juice-check', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ juice_name, liters, shift })
+      })
+      checkLiters.value = ''
+      // Refresh the juices table to show latest check + status
+      await loadJuices()
+    } catch (e) {
+      alert(`Record failed: ${e.message}`)
+    }
+  })
+}
 
 let juicesCache = []
 const juicesByName = new Map()
@@ -36,7 +72,7 @@ async function fetchJSON(url, opts) {
 
 // ---- Juices ----
 async function loadJuices() {
-  const juices = await fetchJSON('/api/juices')
+  const juices = await fetchJSON('/api/juices/with-latest-check')
   juicesCache = juices
   juicesByName.clear()
   juices.forEach(j => juicesByName.set(j.name, j))
@@ -47,14 +83,30 @@ async function loadJuices() {
     .join('')
 
   // table
-  juicesTbody.innerHTML = juices.map(j => `
-    <tr>
-      <td>${j.name}</td>
-      <td>${j.default_batch_liters == null ? '—' : fmtQty(j.default_batch_liters)}</td>
-      <td>${j.par_liters == null ? '—' : fmtQty(j.par_liters)}</td>
-      <td>${j.expiry_days}</td>
-    </tr>
-  `).join('')
+  juicesTbody.innerHTML = juices.map(j => {
+    const latest = j.latest_check
+    const latestTxt = latest
+      ? `${Number(latest.liters).toFixed(2)} L (${latest.shift} @ ${fmtDateTime(latest.checked_at)})`
+      : '—'
+
+    const statusClass =
+      j.latest_status === 'BELOW PAR' ? 'badge badge-warn' :
+      j.latest_status === 'OK'        ? 'badge badge-ok'   :
+                                        'badge badge-unknown'
+
+    return `
+      <tr data-juice="${j.name}">
+        <td>${j.name}</td>
+        <td>${j.default_batch_liters == null ? '—' : fmtQty(j.default_batch_liters)}</td>
+        <td>${j.par_liters == null ? '—' : fmtQty(j.par_liters)}</td>
+        <td>${j.expiry_days}</td>
+        <td>${latestTxt}</td>
+        <td><span class="${statusClass}">${j.latest_status}</span></td>
+      </tr>
+    `
+  }).join('')
+
+
 
   updateBatchHint()
 }
@@ -115,7 +167,7 @@ function updateBatchHint() {
   }
 
   const liters = j.default_batch_liters * m
-  const qt = liters * (1 / 0.946352946)
+  const qt = liters * QT_PER_L
   batchCalc.textContent = `${m.toFixed(2)}× = ${qt.toFixed(2)} qt (${liters.toFixed(2)} L) — Default: ${fmtQty(j.default_batch_liters)}`
 }
 
