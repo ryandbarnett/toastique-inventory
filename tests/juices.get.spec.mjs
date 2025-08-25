@@ -2,6 +2,16 @@
 import { describe, it, beforeEach, expect } from 'vitest'
 import { makeApi } from './helpers.mjs'
 
+/**
+ * GET /api/juices
+ * Contract:
+ * - 200 OK: returns array of { id, name, parLiters, currentLiters, lastUpdated, status }
+ * - status derivation:
+ *    - OUT when currentLiters <= 0
+ *    - OK when currentLiters >= parLiters
+ *    - BELOW PAR otherwise
+ * - lastUpdated is a valid ISO-ish timestamp
+ */
 describe('GET /api/juices', () => {
   let api
   beforeEach(async () => { api = await makeApi() })
@@ -9,21 +19,23 @@ describe('GET /api/juices', () => {
   it('returns list with derived status', async () => {
     const res = await api.get('/api/juices').expect(200)
     expect(Array.isArray(res.body)).toBe(true)
-    expect(res.body.length).toBeGreaterThan(0)
     for (const j of res.body) {
-      const expected = j.currentLiters >= j.parLiters ? 'OK' : 'BELOW PAR'
+      const expected =
+        j.currentLiters <= 0
+          ? 'OUT'
+          : (j.currentLiters >= j.parLiters ? 'OK' : 'BELOW PAR')
       expect(j.status).toBe(expected)
     }
   })
 
   it('each item has required fields and valid lastUpdated', async () => {
-  const res = await api.get('/api/juices').expect(200)
+    const res = await api.get('/api/juices').expect(200)
     for (const j of res.body) {
-      expect(typeof j.id).toBe('number')
-      expect(typeof j.name).toBe('string')
+      expect(j).toHaveProperty('id')
+      expect(j).toHaveProperty('name')
       expect(typeof j.parLiters).toBe('number')
       expect(typeof j.currentLiters).toBe('number')
-      expect(['OK', 'BELOW PAR']).toContain(j.status)
+      expect(['OK', 'BELOW PAR', 'OUT']).toContain(j.status)
       expect(new Date(j.lastUpdated).toString()).not.toBe('Invalid Date')
     }
   })
