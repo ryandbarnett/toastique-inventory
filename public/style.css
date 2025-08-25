@@ -185,6 +185,11 @@ button:active {
   z-index: 1000;
 }
 
+/* Default: show full label, hide short */
+.th-current .label-full { display: inline; }
+.th-current .label-short { display: none; }
+.th-current abbr { text-decoration: none; }
+
 /* Slightly roomier layout on larger screens (your laptop during dev) */
 @media (min-width: 768px) {
   body { margin: 24px; }
@@ -194,7 +199,7 @@ button:active {
   button { padding: 8px 12px; }
 }
 
-/* Mobile: no horizontal scroll */
+/* Mobile: no horizontal scroll + short header label */
 @media (max-width: 560px) {
   /* Hide PAR (col 2) and Last Updated (col 5) */
   table th:nth-child(2),
@@ -204,7 +209,18 @@ button:active {
     display: none;
   }
 
-  /* Make the remaining columns fit comfortably */
+  td:first-child {
+    max-width: 44vw;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  /* Swap "Current (L)" → "L" */
+  .th-current .label-full { display: none; }
+  .th-current .label-short { display: inline; }
+
+  /* Fit comfortably on phones */
   .status { font-size: 0.85rem; padding: 3px 8px; }
   .actions { gap: 6px; }
   input[type="number"] { width: 72px; }
@@ -216,3 +232,5 @@ button:active {
   input[type="number"] { width: 64px; }
   .status { font-size: 0.8rem; }
 }
+
+@media (hover: hover) { button { cursor: pointer; } }
