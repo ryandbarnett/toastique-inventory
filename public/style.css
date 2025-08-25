@@ -9,115 +9,185 @@
   font-family: "Helvetica Neue", Arial, sans-serif;
 }
 
+/* Base (mobile-first) */
 body {
-  margin: 24px;
+  margin: 12px;
   background: var(--toastique-bg);
   color: #222;
 }
 
 h1 {
-  margin-bottom: 20px;
-  font-size: 1.8rem;
+  margin-bottom: 6px;
+  font-size: 1.6rem;
   font-weight: 700;
   color: var(--toastique-green);
 }
 
+.muted {
+  color: var(--toastique-gray);
+  font-size: 0.9rem;
+  font-style: italic;
+  margin-top: -2px;
+  margin-bottom: 14px;
+}
+
+/* Table card */
 table {
   border-collapse: separate;
   border-spacing: 0;
   width: 100%;
   background: #fff;
   border-radius: 12px;
-  overflow: hidden;
+  overflow: hidden; /* keep rounded corners */
   box-shadow: 0 2px 6px rgba(0,0,0,0.05);
 }
 
+/* Header */
 th {
   text-align: left;
   background: var(--toastique-green);
   color: #fff;
   padding: 12px 10px;
   font-weight: 600;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
 }
 
+/* Sortable headers (no hover; mobile-friendly) */
+th[data-sort] {
+  touch-action: manipulation;    /* reduce click delay */
+}
+th[data-sort]:active {
+  opacity: 0.9;                  /* press feedback */
+}
+
+/* Sort icons */
+.sort-icon {
+  display: inline-block;
+  line-height: 1;
+  font-size: 1.05rem;            /* a hair bigger for touch */
+  margin-left: 6px;
+  opacity: 0.85;
+  color: rgba(255,255,255,0.9);  /* neutral hint on green header */
+}
+th[data-sort] .sort-icon::after {
+  content: '↕';                  /* neutral hint for all sortable cols */
+}
+
+/* Active column shows a gold arrow */
+th[data-sort].active .sort-icon {
+  color: var(--toastique-gold);
+  opacity: 1;
+  font-weight: 700;
+}
+th[data-sort].active .sort-icon::after {
+  content: '▲';                  /* ascending */
+}
+th[data-sort].active.desc .sort-icon::after {
+  content: '▼';                  /* descending */
+}
+
+/* Cells */
 td {
   padding: 12px 10px;
   border-bottom: 1px solid var(--toastique-border);
 }
-
 tr:last-child td {
   border-bottom: none;
 }
 
-tr:hover {
+/* Subtle row highlight on tap/selection */
+tr:active {
   background: #fdfcf9;
 }
 
+/* Numeric alignment & nowrap date */
+th:nth-child(2), td:nth-child(2),  /* PAR (L) */
+th:nth-child(3), td:nth-child(3) { /* Current (L) */
+  text-align: right;
+}
+td:nth-child(5) {                   /* Last Updated */
+  white-space: nowrap;
+}
+
+/* Status chips */
 .status {
   font-weight: 600;
   padding: 4px 10px;
   border-radius: 999px;
   display: inline-block;
-  font-size: 0.9rem;
+  font-size: 0.95rem;
 }
-
 .ok {
   background: #eaf5ee;
   color: var(--toastique-green);
 }
-
 .low {
   background: #fdf0e6;
   color: var(--toastique-gold);
 }
-
 .out {
-  background: #fbeaea;   /* softer warm red background */
-  color: #a83a32;        /* earthy brick red text */
+  background: var(--toastique-red-bg);
+  color: var(--toastique-red-text);
 }
 
-.muted {
-  color: var(--toastique-gray);
-  font-size: 0.85rem;
-}
-
+/* Actions */
 .actions {
   display: flex;
   gap: 8px;
   align-items: center;
 }
 
+/* Number input (mobile-friendly) */
 input[type="number"] {
-  width: 90px;
-  padding: 6px 8px;
+  width: 92px;
+  padding: 10px 10px;            /* bigger tap target */
   border: 1px solid var(--toastique-border);
-  border-radius: 6px;
+  border-radius: 8px;
+  font-size: 1rem;
 }
 
+/* Hide spinners (iOS/Safari/Chrome) */
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+input[type="number"] { appearance: textfield; }
+
+/* Button (mobile-friendly) */
 button {
-  padding: 6px 12px;
+  padding: 10px 14px;            /* larger tap target (≥44px high) */
   border: none;
-  border-radius: 6px;
+  border-radius: 8px;
   background: var(--toastique-gold);
   color: #fff;
-  font-weight: 600;
-  cursor: pointer;
-  transition: background 0.2s;
+  font-weight: 700;
+  font-size: 1rem;
+  cursor: default;               /* no pointer on mobile */
+  transition: transform 0.06s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+button:active {
+  transform: scale(0.99);        /* press feedback */
 }
 
-button:hover {
-  background: #b88d3f;
-}
-
+/* Toast */
 #toast {
   position: fixed;
   bottom: 16px;
   right: 16px;
-  padding: 10px 14px;
-  border-radius: 8px;
+  padding: 12px 16px;
+  border-radius: 10px;
   background: var(--toastique-green);
   color: #fff;
-  font-weight: 600;
+  font-weight: 700;
   display: none;
   box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+}
+
+/* Slightly roomier layout on larger screens (your laptop during dev) */
+@media (min-width: 768px) {
+  body { margin: 24px; }
+  h1 { font-size: 1.8rem; }
+  .sort-icon { font-size: 0.95rem; }
+  input[type="number"] { padding: 8px 10px; }
+  button { padding: 8px 12px; }
 }

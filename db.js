@@ -25,10 +25,25 @@ export function seedDb(db) {
     VALUES (?, ?, ?, ?)
   `)
   const seedRows = [
-    ['Apple Juice', 6, 7, now],
-    ['Ginger', 4, 3, now],
-    ['Lemon', 4, 4, now],
+    // OK (>= par)
+    ['Apple Juice', 6, 6, now],
+    ['Balance', 6, 7, now],
+    ['Defender', 6, 6.5, now],
+    ['Radiance', 6, 8, now],
+
+    // BELOW PAR (0 < liters < par)
+    ['Cure', 6, 4, now],
+    ['Metabolize', 6, 2, now],
+    ['Pitaya Lemonade', 6, 1.5, now],
+    ['Lemon', 4, 2, now],
+
+    // OUT (0 liters)
+    ['Ginger', 4, 0, now],
+    ['Lime', 4, 0, now],
+    ['Recharge', 6, 0, now],
+    ['Summer Seasonal', 6, 0, now]
   ]
   const tx = db.transaction(rows => rows.forEach(r => insert.run(...r)))
   tx(seedRows)
 }
+
