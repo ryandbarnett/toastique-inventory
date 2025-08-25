@@ -201,6 +201,9 @@ button:active {
 
 /* Mobile: no horizontal scroll + short header label */
 @media (max-width: 560px) {
+  /* Predictable widths + no overflow */
+  table { table-layout: fixed; max-width: 100%; }
+
   /* Hide PAR (col 2) and Last Updated (col 5) */
   table th:nth-child(2),
   table td:nth-child(2),
@@ -209,12 +212,14 @@ button:active {
     display: none;
   }
 
-  td:first-child {
-    max-width: 44vw;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+  /* Name column: show 3-letter code, hide full name, fix width */
+  .name-code {
+    display: inline;
+    font-weight: 700;
+    letter-spacing: 0.3px;
   }
+  .name-full { display: none; }
+  th:first-child, td:first-child { width: 56px; text-align: center; }
 
   /* Swap "Current (L)" → "L" */
   .th-current .label-full { display: none; }
@@ -225,6 +230,11 @@ button:active {
   .actions { gap: 6px; }
   input[type="number"] { width: 72px; }
   button { padding: 6px 10px; }
+
+  /* Optional: set rough widths for remaining columns to avoid jank */
+  th:nth-child(3), td:nth-child(3) { width: 18%; } /* L */
+  th:nth-child(4), td:nth-child(4) { width: 22%; } /* Status */
+  th:nth-child(6), td:nth-child(6) { width: 20%; } /* Update */
 }
 
 /* Ultra-narrow phones */

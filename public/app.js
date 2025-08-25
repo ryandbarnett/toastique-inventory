@@ -52,6 +52,13 @@ async function updateLiters(id, liters) {
   return res.json()
 }
 
+// Add near the top with your other helpers
+function code3(name) {
+  // Take first 3 alphabetic characters; uppercase
+  const letters = name.replace(/[^A-Za-z]/g, '')
+  return letters.slice(0, 3).toUpperCase()
+}
+
 // --- Sorting state ---
 let juicesCache = []
 let sortMode = 'name'
@@ -125,7 +132,10 @@ function renderTable(juices) {
 
     const tr = document.createElement('tr')
     tr.innerHTML = `
-      <td>${j.name}</td>
+      <td class="name-col">
+        <span class="name-code"><abbr title="${j.name}">${code3(j.name)}</abbr></span>
+        <span class="name-full">${j.name}</span>
+      </td>
       <td>${j.parLiters}</td>
       <td>${j.currentLiters}</td>
       <td>
