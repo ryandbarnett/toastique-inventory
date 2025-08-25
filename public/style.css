@@ -1,0 +1,123 @@
+:root {
+  --toastique-gold: #cfa54b;
+  --toastique-green: #4a7c59;
+  --toastique-red-bg: #fbeaea;   /* soft warm red background */
+  --toastique-red-text: #a83a32; /* earthy brick red text */
+  --toastique-bg: #faf8f3;
+  --toastique-gray: #6b7280;
+  --toastique-border: #e5e7eb;
+  font-family: "Helvetica Neue", Arial, sans-serif;
+}
+
+body {
+  margin: 24px;
+  background: var(--toastique-bg);
+  color: #222;
+}
+
+h1 {
+  margin-bottom: 20px;
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: var(--toastique-green);
+}
+
+table {
+  border-collapse: separate;
+  border-spacing: 0;
+  width: 100%;
+  background: #fff;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+}
+
+th {
+  text-align: left;
+  background: var(--toastique-green);
+  color: #fff;
+  padding: 12px 10px;
+  font-weight: 600;
+}
+
+td {
+  padding: 12px 10px;
+  border-bottom: 1px solid var(--toastique-border);
+}
+
+tr:last-child td {
+  border-bottom: none;
+}
+
+tr:hover {
+  background: #fdfcf9;
+}
+
+.status {
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 999px;
+  display: inline-block;
+  font-size: 0.9rem;
+}
+
+.ok {
+  background: #eaf5ee;
+  color: var(--toastique-green);
+}
+
+.low {
+  background: #fdf0e6;
+  color: var(--toastique-gold);
+}
+
+.out {
+  background: #fbeaea;   /* softer warm red background */
+  color: #a83a32;        /* earthy brick red text */
+}
+
+.muted {
+  color: var(--toastique-gray);
+  font-size: 0.85rem;
+}
+
+.actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+input[type="number"] {
+  width: 90px;
+  padding: 6px 8px;
+  border: 1px solid var(--toastique-border);
+  border-radius: 6px;
+}
+
+button {
+  padding: 6px 12px;
+  border: none;
+  border-radius: 6px;
+  background: var(--toastique-gold);
+  color: #fff;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+button:hover {
+  background: #b88d3f;
+}
+
+#toast {
+  position: fixed;
+  bottom: 16px;
+  right: 16px;
+  padding: 10px 14px;
+  border-radius: 8px;
+  background: var(--toastique-green);
+  color: #fff;
+  font-weight: 600;
+  display: none;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+}

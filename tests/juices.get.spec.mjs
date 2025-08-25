@@ -15,4 +15,16 @@ describe('GET /api/juices', () => {
       expect(j.status).toBe(expected)
     }
   })
+
+  it('each item has required fields and valid lastUpdated', async () => {
+  const res = await api.get('/api/juices').expect(200)
+    for (const j of res.body) {
+      expect(typeof j.id).toBe('number')
+      expect(typeof j.name).toBe('string')
+      expect(typeof j.parLiters).toBe('number')
+      expect(typeof j.currentLiters).toBe('number')
+      expect(['OK', 'BELOW PAR']).toContain(j.status)
+      expect(new Date(j.lastUpdated).toString()).not.toBe('Invalid Date')
+    }
+  })
 })
