@@ -32,7 +32,7 @@ function fmtDate(iso) {
 }
 
 function showToast(msg) {
-  const el = document.getElementById('toast')
+  const el = document.getElementById('notify')
   el.textContent = msg
   el.style.display = 'block'
   clearTimeout(showToast._t)
@@ -135,7 +135,7 @@ function renderTable(juices) {
       </td>
       <td class="muted">${fmtDate(j.lastUpdated)}</td>
       <td class="actions">
-        <input type="number" step="0.1" min="0" max="30"
+        <input type="number" step="0.1" min="0" max="30" inputmode="decimal" enterkeyhint="done"
           value="${j.currentLiters}"
           aria-label="New liters for ${j.name}" />
         <button>Save</button>
