@@ -130,6 +130,9 @@ function renderTable(juices) {
     if (status === 'BELOW PAR') below++
     if (status === 'OUT') out++
 
+    const statusClass = status === 'OK' ? 'ok' : status === 'OUT' ? 'out' : 'low'
+    const shortAttr = status === 'BELOW PAR' ? 'data-short="LOW"' : ''
+
     const tr = document.createElement('tr')
     tr.innerHTML = `
       <td class="name-col">
@@ -139,9 +142,7 @@ function renderTable(juices) {
       <td>${j.parLiters}</td>
       <td>${j.currentLiters}</td>
       <td>
-        <span class="status ${
-          status === 'OK' ? 'ok' : status === 'OUT' ? 'out' : 'low'
-        }">${status}</span>
+        <span class="status ${statusClass}" ${shortAttr}>${status}</span>
       </td>
       <td class="muted">${fmtDate(j.lastUpdated)}</td>
       <td class="actions">
@@ -165,7 +166,6 @@ function renderTable(juices) {
       try {
         await updateLiters(j.id, value)
         showToast(`Updated ${j.name} to ${value} L`)
-        // Refresh data so status/lastUpdated are current
         const refreshed = await fetchJuices()
         juicesCache = refreshed
         renderTable(juicesCache)

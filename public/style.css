@@ -118,6 +118,9 @@ td:nth-child(5) {                   /* Last Updated */
   display: inline-block;
   font-size: 0.95rem;
 }
+.status::after {
+  content: "";
+}
 .ok {
   background: #eaf5ee;
   color: var(--toastique-green);
@@ -185,6 +188,11 @@ button:active {
   z-index: 1000;
 }
 
+/* Default: desktop/larger screens */
+.name-code { display: none; }
+.name-full { display: inline; }
+.name-code abbr { text-decoration: none; border-bottom: 0; }
+
 /* Default: show full label, hide short */
 .th-current .label-full { display: inline; }
 .th-current .label-short { display: none; }
@@ -219,22 +227,30 @@ button:active {
     letter-spacing: 0.3px;
   }
   .name-full { display: none; }
-  th:first-child, td:first-child { width: 56px; text-align: center; }
+  th:first-child, td:first-child { width: 12%; text-align: center; }
 
   /* Swap "Current (L)" → "L" */
   .th-current .label-full { display: none; }
   .th-current .label-short { display: inline; }
 
-  /* Fit comfortably on phones */
-  .status { font-size: 0.85rem; padding: 3px 8px; }
+  /* Only shrink/replace BELOW PAR (i.e., .low) */
+  .status.low {
+    font-size: 0;              /* hide full "BELOW PAR" text node */
+  }
+  .status.low::after {
+    content: attr(data-short); /* "LOW" from data-short */
+    font-size: 14px;
+    font-weight: 600;
+  }
   .actions { gap: 6px; }
   input[type="number"] { width: 72px; }
   button { padding: 6px 10px; }
-
+  .sort-icon { margin-left: 0px; }
+  .sort-icon::after { font-size: .75rem }
   /* Optional: set rough widths for remaining columns to avoid jank */
-  th:nth-child(3), td:nth-child(3) { width: 18%; } /* L */
-  th:nth-child(4), td:nth-child(4) { width: 22%; } /* Status */
-  th:nth-child(6), td:nth-child(6) { width: 20%; } /* Update */
+  th:nth-child(3), td:nth-child(3) { width: 7%; } /* L */
+  th:nth-child(4), td:nth-child(4) { width: 15%; } /* Status */
+  th:nth-child(6), td:nth-child(6) { width: 28%; } /* Update */
 }
 
 /* Ultra-narrow phones */
