@@ -75,7 +75,9 @@ export function applySortHeaderState(thead, { sortMode, sortDir }) {
   }
 }
 
-export function wireSaves(tbody, { onSaveRequest }) {
+// Mobile-focused interactions: tap Save + blur clamp
+export function wireTableInteractions(tbody, { onSaveRequest }) {
+  // 1) Tap Save ⇒ PUT ⇒ refetch
   tbody.addEventListener('click', async (e) => {
     const btn = e.target.closest('.save-btn');
     if (!btn) return;
@@ -85,27 +87,22 @@ export function wireSaves(tbody, { onSaveRequest }) {
     const input = row?.querySelector(`.liters-input[data-id="${id}"]`);
     if (!input) return;
 
-    const liters = Number(input.value);
-    if (!Number.isFinite(liters) || liters < 0 || liters > 30) {
+    const liters = normalizeLiters(input.value);
+    if (liters == null) {
       showToast('Enter a number between 0 and 30.');
       return;
     }
 
-    btn.disabled = true;
-    const prev = btn.textContent;
-    btn.textContent = 'Saving…';
-    try {
-      await updateLiters(id, liters);
-      showToast(`Updated ${input.dataset.name} to ${liters} L`);
-      await onSaveRequest(); // controller decides: refetch & rerender
-    } catch (err) {
-      console.error(err);
-      showToast('Update failed');
-    } finally {
-      btn.disabled = false;
-      btn.textContent = prev;
-    }
+    await doSave(btn, input, id, liters, onSaveRequest);
   });
+
+  // 2) On leaving the input, clamp within [0, 30]
+  tbody.addEventListener('blur', (e) => {
+    const input = e.target.closest('.liters-input');
+    if (!input) return;
+    const liters = clampLiters(input.value);
+    if (liters != null) input.value = liters;
+  }, true);
 }
 
 function sortJuices(list, sortMode, sortDir) {
@@ -122,6 +119,41 @@ function sortJuices(list, sortMode, sortDir) {
   }
   if (sortDir === 'desc') arr.reverse();
   return arr;
+}
+
+function normalizeLiters(raw) {
+  const n = Number(String(raw).trim());
+  if (!Number.isFinite(n)) return null;
+  if (n < 0 || n > 30) return null;
+  return n;
+}
+
+function clampLiters(raw) {
+  const n = Number(String(raw).trim());
+  if (!Number.isFinite(n)) return null;
+  return Math.min(30, Math.max(0, n));
+}
+
+async function doSave(btn, input, id, liters, onSaveRequest) {
+  if (btn) {
+    btn.disabled = true;
+    var prev = btn.textContent;
+    btn.textContent = 'Saving…';
+  }
+
+  try {
+    await updateLiters(id, liters);
+    showToast(`Updated ${input.dataset.name} to ${liters} L`);
+    await onSaveRequest?.(); // controller decides: refetch & rerender
+  } catch (err) {
+    console.error(err);
+    showToast('Update failed');
+  } finally {
+    if (btn) {
+      btn.disabled = false;
+      btn.textContent = prev;
+    }
+  }
 }
 
 function showToast(msg) {
