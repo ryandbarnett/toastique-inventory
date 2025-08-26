@@ -60,3 +60,12 @@ export function createApp({ dbPath = 'db.sqlite', seed = false } = {}) {
 
   return app
 }
+
+// Start the server only when this file is run directly (not when imported by tests)
+if (import.meta.url === `file://${process.argv[1]}`) {
+  const PORT = process.env.PORT || 3000;
+  const app = createApp({ seed: process.env.SEED === 'true' }); // optional: seed via env
+  app.listen(PORT, () => {
+    console.log(`🚀 Server listening on http://localhost:${PORT}`);
+  });
+}
