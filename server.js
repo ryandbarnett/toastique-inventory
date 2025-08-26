@@ -1,7 +1,7 @@
 // server.js
 import 'dotenv/config'
 import express from 'express'
-import { initDb, seedDb } from './db.js'
+import { initDb, seedDb } from './lib/db/index.js'
 
 function withStatus(row) {
   if (row.currentLiters <= 0) {
