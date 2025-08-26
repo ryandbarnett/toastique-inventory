@@ -5,6 +5,10 @@ import { initDb, seedDb } from './lib/db/index.js'
 import { makeJuicesRepo } from './lib/repo/juices.js'
 import { withStatus, validateLiters } from './lib/service/juices.js'
 
+function notFound(res) {
+  return res.status(404).json({ error: 'Not Found' })
+}
+
 /**
  * @param {{ dbPath?: string, seed?: boolean }} opts
  */
@@ -30,14 +34,14 @@ export function createApp({ dbPath = 'db.sqlite', seed = false } = {}) {
   app.put('/api/juices/:id/liters', (req, res, next) => {
     try {
       const id = Number(req.params.id)
-      if (!Number.isInteger(id)) return res.status(404).json({ error: 'Not Found' })
+      if (!Number.isInteger(id)) return notFound(res)
 
       const { liters } = req.body ?? {}
       const v = validateLiters(liters)
       if (!v.ok) return res.status(400).json({ error: v.message })
 
       const exists = juices.exists(id)
-      if (!exists) return res.status(404).json({ error: 'Not Found' })
+      if (!exists) return notFound(res)
 
       const now = new Date().toISOString()
       juices.updateLiters(id, liters, now)
