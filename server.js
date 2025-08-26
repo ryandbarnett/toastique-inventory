@@ -47,6 +47,8 @@ export function createApp({ dbPath = 'db.sqlite', seed = false } = {}) {
       juices.updateLiters(id, liters, now)
 
       const updated = juices.getById(id)
+      // ensure returned object matches the update exactly
+      updated.lastUpdated = now
       res.json(withStatus(updated))
     } catch (err) { next(err) }
   })
