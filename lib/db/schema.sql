@@ -1,0 +1,7 @@
+CREATE TABLE IF NOT EXISTS juices (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  name TEXT NOT NULL,
+  parLiters REAL NOT NULL,
+  currentLiters REAL NOT NULL,
+  lastUpdated TEXT NOT NULL
+);
