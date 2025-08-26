@@ -17,14 +17,17 @@ export function makeFrontendController({
 
   function getState() { return { sortMode, sortDir }; }
 
-  function setMeta({ total, below, out }) {
+  function setMeta({ total, below, out }, { sortMode, sortDir }) {
     if (!meta) return;
-    meta.textContent = `${total} juices • ${below} below PAR • ${out} out`;
+    const labels = { name: 'Name', status: 'Status' };
+    const arrow = sortDir === 'asc' ? '↑' : '↓';
+    const sortLabel = labels[sortMode] ?? sortMode;
+    meta.textContent = `${total} juices • ${below} below PAR • ${out} out — sorted by ${sortLabel} (${arrow})`;
   }
 
   function rerender() {
     const counts = renderTable(tbody, cache, { sortMode, sortDir });
-    setMeta(counts);
+    setMeta(counts, { sortMode, sortDir });
     applySortHeaderState(thead, { sortMode, sortDir });
   }
 
