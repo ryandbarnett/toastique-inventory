@@ -1,3 +1,4 @@
+// public/js/render.mjs
 // Rendering + delegated events (DOM only)
 import { code3, getStatus, STATUS_ORDER, fmtDate } from './utils.mjs';
 import { updateLiters } from './api.mjs';

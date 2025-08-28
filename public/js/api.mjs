@@ -1,3 +1,4 @@
+// public/js/api.mjs
 // API calls (no DOM)
 export async function fetchJuices() {
   const res = await fetch('/api/juices');

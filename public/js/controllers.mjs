@@ -1,3 +1,4 @@
+// public/js/controllers.mjs
 // Orchestrates state + wiring
 import { fetchJuices } from './api.mjs';
 import { renderTable, wireSaves, wireSorting, applySortHeaderState } from './render.mjs';
