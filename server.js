@@ -1,9 +1,11 @@
 // server.js
 import 'dotenv/config'
 import express from 'express'
+import cookieSession from 'cookie-session'
 import { initDb, seedDb } from './lib/db/index.js'
 import { makeJuicesRepo } from './lib/repo/juices.js'
 import { withStatus, validateLiters } from './lib/service/juices.js'
+import { makeAuthRouter } from './routes/auth.mjs'
 
 function notFound(res) {
   return res.status(404).json({ error: 'Not Found' })
@@ -17,10 +19,29 @@ export function createApp({ dbPath = 'db.sqlite', seed = false } = {}) {
   app.use(express.json())
   app.use(express.static('public'))
 
+  // Session middleware (cookie-based)
+  app.use(cookieSession({
+    name: 'sid',
+    keys: [process.env.SESSION_SECRET || 'dev-secret'],
+    sameSite: 'lax',
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    // 7 days
+    maxAge: 7 * 24 * 60 * 60 * 1000,
+  }))
+
   const db = initDb(dbPath)
   if (seed) seedDb(db)
 
   const juices = makeJuicesRepo(db)
+
+  function requireAuth(req, res, next) {
+    if (!req.session?.user) return res.status(401).json({ error: 'Unauthorized' })
+    next()
+  }
+
+  // --- Auth routes
+  app.use('/api/auth', makeAuthRouter(db))
 
   // GET /api/juices
   app.get('/api/juices', (_req, res, next) => {
@@ -30,8 +51,8 @@ export function createApp({ dbPath = 'db.sqlite', seed = false } = {}) {
     } catch (err) { next(err) }
   })
 
-  // PUT /api/juices/:id/liters
-  app.put('/api/juices/:id/liters', (req, res, next) => {
+  // PUT /api/juices/:id/liters (protected)
+  app.put('/api/juices/:id/liters', requireAuth, (req, res, next) => {
     try {
       const id = Number(req.params.id)
       if (!Number.isInteger(id)) return notFound(res)

@@ -13,7 +13,14 @@ import { makeApi } from './helpers.mjs'
  */
 describe('PUT /api/juices/:id/liters', () => {
   let api
-  beforeEach(async () => { api = await makeApi() })
+  beforeEach(async () => {
+    api = await makeApi({ seed: true })
+    // Authenticate the agent once for all tests in this suite
+    await api.post('/api/auth/begin').send({ userId: 1 }).expect(200)
+    await api.post('/api/auth/set-pin')
+    .send({ userId: 1, pin: '1234', confirm: '1234' })
+    .expect(200)
+  })
 
   it('updates currentLiters, returns updated record, and bumps lastUpdated (list-only flow)', async () => {
     // Baseline from list
