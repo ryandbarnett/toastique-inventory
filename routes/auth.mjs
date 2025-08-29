@@ -79,5 +79,11 @@ export function makeAuthRouter(db) {
     res.json(req.session.user)
   })
 
+  // GET /api/auth/users -> [{ id, name }]
+  router.get('/users', (_req, res) => {
+    const rows = db.prepare(`SELECT id, name FROM users ORDER BY name ASC`).all()
+    res.json(rows)
+  })
+
   return router
 }
