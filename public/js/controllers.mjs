@@ -1,7 +1,7 @@
 // public/js/controllers.mjs
 // Orchestrates state + wiring
 import {fetchJuices, fetchMe, fetchUsers, authBegin, authSetPin, authLogin, authLogout } from './api.mjs';
-import { renderTable, wireSaves, wireSorting, applySortHeaderState } from './render.mjs';
+import { renderTable, wireTableInteractions, wireSorting, applySortHeaderState } from './render.mjs';
 
 export function makeFrontendController({
   tableBodySelector = '#tb',
@@ -189,7 +189,7 @@ export function makeFrontendController({
   }
 
   function init() {
-    wireSaves(tbody, { onSaveRequest: refetchAndRender });
+    wireTableInteractions(tbody, { onSaveRequest: refetchAndRender });
     wireSorting(thead, { getState, onSortChange });
     // fetch session & paint header
     fetchMe().then(u => { currentUser = u; renderAuthBox(); }).catch(console.error);
