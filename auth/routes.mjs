@@ -1,4 +1,4 @@
-// routes/auth.mjs
+// auth/routes.mjs
 import express from 'express'
 import bcrypt from 'bcryptjs'
 
