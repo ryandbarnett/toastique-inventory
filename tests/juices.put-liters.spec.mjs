@@ -1,6 +1,7 @@
 // tests/juices.put-liters.spec.mjs
 import { describe, it, beforeEach, expect } from 'vitest'
 import { makeApi } from './helpers.mjs'
+import { loginAs } from './auth/helpers.mjs'
 
 /**
  * PUT /api/juices/:id/liters
@@ -13,7 +14,10 @@ import { makeApi } from './helpers.mjs'
  */
 describe('PUT /api/juices/:id/liters', () => {
   let api
-  beforeEach(async () => { api = await makeApi() })
+  beforeEach(async () => {
+    api = await makeApi({ seed: true })
+    await loginAs(api)
+  })
 
   it('updates currentLiters, returns updated record, and bumps lastUpdated (list-only flow)', async () => {
     // Baseline from list

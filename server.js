@@ -4,6 +4,7 @@ import express from 'express'
 import { initDb, seedDb } from './lib/db/index.js'
 import { makeJuicesRepo } from './lib/repo/juices.js'
 import { withStatus, validateLiters } from './lib/service/juices.js'
+import { mountAuth, requireAuth } from './auth/index.mjs'
 
 function notFound(res) {
   return res.status(404).json({ error: 'Not Found' })
@@ -22,6 +23,19 @@ export function createApp({ dbPath = 'db.sqlite', seed = false } = {}) {
 
   const juices = makeJuicesRepo(db)
 
+  // --- Auth: mount session + /api/auth with one call
+  // (Keeping your previous cookie-session name/keys via overrides)
+  mountAuth(app, db, {
+    session: {
+      name: 'sid',
+      keys: [process.env.SESSION_SECRET || 'dev-secret'],
+      sameSite: 'lax',
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      maxAge: 7 * 24 * 60 * 60 * 1000,
+    }
+  })
+
   // GET /api/juices
   app.get('/api/juices', (_req, res, next) => {
     try {
@@ -30,8 +44,8 @@ export function createApp({ dbPath = 'db.sqlite', seed = false } = {}) {
     } catch (err) { next(err) }
   })
 
-  // PUT /api/juices/:id/liters
-  app.put('/api/juices/:id/liters', (req, res, next) => {
+  // PUT /api/juices/:id/liters (protected)
+  app.put('/api/juices/:id/liters', requireAuth, (req, res, next) => {
     try {
       const id = Number(req.params.id)
       if (!Number.isInteger(id)) return notFound(res)
