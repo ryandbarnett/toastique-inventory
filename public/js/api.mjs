@@ -1,7 +1,8 @@
 // public/js/api.mjs
 // API calls (no DOM)
-export async function fetchJuices() {
-  const res = await fetch('/api/juices');
+export async function fetchJuices({ sort = 'name', dir = 'asc' } = {}) {
+  const q = new URLSearchParams({ sort, dir }).toString();
+  const res = await fetch(`/api/juices?${q}`);
   if (!res.ok) throw new Error('Failed to load juices');
   return res.json();
 }

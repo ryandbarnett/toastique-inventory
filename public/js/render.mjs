@@ -1,13 +1,13 @@
 // public/js/render.mjs
 // Rendering + delegated events (DOM only)
-import { code3, getStatus, STATUS_ORDER, fmtDate } from './utils.mjs';
+import { code3, getStatus, fmtDate } from './utils.mjs';
 import { updateLiters } from './api.mjs';
 
-export function renderTable(tbody, juices, { sortMode, sortDir }) {
+export function renderTable(tbody, juices, { sortMode, sortDir } = {}) {
   tbody.innerHTML = '';
 
-  // sorting (same behavior as before)
-  const list = sortJuices(juices, sortMode, sortDir);
+  // Server-side sorting: render exactly in the order provided
+  const list = juices;
 
   let below = 0;
   let out = 0;
@@ -104,22 +104,6 @@ export function wireTableInteractions(tbody, { onSaveRequest }) {
     const liters = clampLiters(input.value);
     if (liters != null) input.value = liters;
   }, true);
-}
-
-function sortJuices(list, sortMode, sortDir) {
-  const arr = [...list];
-  if (sortMode === 'name') {
-    arr.sort((a, b) => a.name.localeCompare(b.name));
-  } else if (sortMode === 'status') {
-    arr.sort((a, b) => {
-      const sa = STATUS_ORDER[getStatus(a)] ?? 99;
-      const sb = STATUS_ORDER[getStatus(b)] ?? 99;
-      if (sa !== sb) return sa - sb;
-      return a.name.localeCompare(b.name);
-    });
-  }
-  if (sortDir === 'desc') arr.reverse();
-  return arr;
 }
 
 function normalizeLiters(raw) {

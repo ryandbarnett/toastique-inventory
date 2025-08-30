@@ -36,11 +36,27 @@ export function createApp({ dbPath = 'db.sqlite', seed = false } = {}) {
     }
   })
 
-  // GET /api/juices
-  app.get('/api/juices', (_req, res, next) => {
+  // GET /api/juices  (?sort=name|status&dir=asc|desc)
+  app.get('/api/juices', (req, res, next) => {
     try {
-      const rows = juices.listAll()
-      res.json(rows.map(withStatus))
+      const rows = db.prepare('SELECT id, name, parLiters, currentLiters, lastUpdated FROM juices').all()
+      const enriched = rows.map(withStatus)
+
+      // Read query params with defaults
+      const sort = String(req.query.sort || 'name')
+      const dir  = String(req.query.dir  || 'asc')
+
+      // Status ranking for sorting:
+      // OUT < BELOW PAR < OK (tie-break by name)
+      const rank = { 'OUT': 0, 'BELOW PAR': 1, 'OK': 2 }
+      const byName   = (a, b) => a.name.localeCompare(b.name)
+      const byStatus = (a, b) => (rank[a.status] - rank[b.status]) || a.name.localeCompare(b.name)
+
+      const cmp = sort === 'status' ? byStatus : byName
+      enriched.sort(cmp)
+      if (dir === 'desc') { enriched.reverse() }
+
+      res.json(enriched)
     } catch (err) { next(err) }
   })
 
