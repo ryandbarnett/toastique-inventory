@@ -23,6 +23,22 @@ A tiny Node/Express + SQLite app to track juices and PAR levels, with PIN-based 
 
 Returns list of all juices with derived status.
 
+#### Sorting (server-side)
+This endpoint supports server-side sorting via query params:
+
+- `sort` → `name` | `status` (default: `name`)
+- `dir`  → `asc`  | `desc`   (default: `asc`)
+
+When sorting by **status**, the ranking is:
+`OUT` < `BELOW PAR` < `OK` (ties break by name A→Z).
+
+**Examples**
+```
+GET /api/juices?sort=name&dir=asc
+GET /api/juices?sort=name&dir=desc
+GET /api/juices?sort=status&dir=asc
+```
+
 **200 OK**
 ```json
 [

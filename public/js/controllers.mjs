@@ -55,14 +55,14 @@ export function makeFrontendController({
   }
 
   async function refetchAndRender() {
-    cache = await fetchJuices();
+    cache = await fetchJuices({ sort: sortMode, dir: sortDir });
     rerender();
   }
 
   function onSortChange(mode, dir) {
     sortMode = mode;
     sortDir = dir;
-    rerender();
+    refetchAndRender();
   }
 
   function init() {
