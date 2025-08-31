@@ -65,16 +65,24 @@ export function makeFrontendController({
     refetchAndRender();
   }
 
-  function init() {
+  async function init() {
     wireTableInteractions(tbody, { onSaveRequest: refetchAndRender });
     wireSorting(thead, { getState, onSortChange });
-    // fetch session & paint header
-    fetchMe().then(u => { currentUser = u; authUI.render(); }).catch(console.error);
-    // initial data render
-    refetchAndRender().catch(err => {
+
+    try {
+      const u = await fetchMe();  // u = {id, name} | null
+      currentUser = u;
+      authUI.render();
+    } catch (err) {
+      console.debug('fetchMe error:', err?.message || err);
+    }
+
+    try {
+      await refetchAndRender();
+    } catch (err) {
       console.error(err);
       tbody.innerHTML = `<tr><td colspan="6">Failed to load.</td></tr>`;
-    });
+    }
   }
 
   return { init, reload: refetchAndRender };
