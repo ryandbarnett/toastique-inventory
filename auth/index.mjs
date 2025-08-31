@@ -1,5 +1,5 @@
 import { makeAuthRouter } from './routes.mjs'
-import { requireAuth, getSessionUser } from './middleware.mjs'
+import { requireAuth } from './middleware.mjs'
 import { cookieSessionMw } from './session.mjs'
 
 /**
@@ -11,4 +11,4 @@ export function mountAuth(app, db, { session } = {}) {
   app.use('/api/auth', makeAuthRouter(db))
 }
 
-export { requireAuth, getSessionUser }
+export { requireAuth }
