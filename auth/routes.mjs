@@ -47,7 +47,7 @@ export function makeAuthRouter(db) {
     setPin.run(hash, id)
 
     // start session
-    req.session.user = { id: user.id, name: user.name }
+    req.session.userId = user.id
     res.json({ id: user.id, name: user.name })
   })
 
@@ -63,7 +63,7 @@ export function makeAuthRouter(db) {
     const ok = bcrypt.compareSync(String(pin), user.pin_hash)
     if (!ok) return res.status(403).json({ error: 'Invalid PIN' })
 
-    req.session.user = { id: user.id, name: user.name }
+    req.session.userId = user.id
     res.json({ id: user.id, name: user.name })
   })
 
@@ -73,11 +73,17 @@ export function makeAuthRouter(db) {
     res.status(204).end()
   })
 
-  // GET /api/auth/me -> { id, name } or 401
+  // GET /api/auth/me -> always 200; { authenticated, user }
   router.get('/me', (req, res) => {
-    if (!req.session?.user) return res.status(401).json({ error: 'Unauthorized' })
-    res.json(req.session.user)
-  })
+    if (!req.session?.userId) {
+      return res.json({ authenticated: false, user: null });
+    }
+    const user = getUserById.get(req.session.userId);
+    res.json({
+      authenticated: true,
+      user: { id: user.id, name: user.name }
+    });
+  });
 
   // GET /api/auth/users -> [{ id, name }]
   router.get('/users', (_req, res) => {

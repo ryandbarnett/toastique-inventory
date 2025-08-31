@@ -9,28 +9,30 @@ describe('GET /api/auth/me', () => {
     api = await makeApi({ seed: true })
   })
 
-  it('401 when not logged in', async () => {
-    await api.get('/api/auth/me').expect(401)
+  it('returns authenticated=false when not logged in', async () => {
+    const res = await api.get('/api/auth/me').expect(200)
+    expect(res.body).toEqual({ authenticated: false, user: null })
   })
 
-  it('200 after first-time set-pin (session started)', async () => {
+  it('returns authenticated=true and user after first-time set-pin (session started)', async () => {
     const userId = 1
 
-    // Begin (mostly to assert the user exists)
+    // Ensure user exists
     await api.post('/api/auth/begin').send({ userId }).expect(200)
 
-    // First-time set PIN → should also start a session
+    // First-time set PIN -> should also start a session
     await api.post('/api/auth/set-pin')
       .send({ userId, pin: '1234', confirm: '1234' })
       .expect(200)
 
-    // Now me should be populated
-    const me = await api.get('/api/auth/me').expect(200)
-    expect(me.body).toEqual(
-      expect.objectContaining({
+    // Now /me should reflect authenticated session
+    const res = await api.get('/api/auth/me').expect(200)
+    expect(res.body).toEqual({
+      authenticated: true,
+      user: expect.objectContaining({
         id: userId,
         name: expect.any(String),
-      })
-    )
+      }),
+    })
   })
 })

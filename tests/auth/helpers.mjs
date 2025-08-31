@@ -40,8 +40,10 @@ export async function loginAs(api, userNameOrId = null, pin = '1234') {
   }
 
   // 4) sanity-check session
-  const me = await api.get('/api/auth/me').expect(200);
-  if (!(me.body && me.body.id)) throw new Error('Login failed: /me did not return a user');
+  const me = await api.get('/api/auth/me').expect(200)
+  const authed = me.body && me.body.authenticated
+  const uid = me.body && me.body.user && me.body.user.id
+  if (!(authed && uid)) throw new Error('Login failed: /me did not return a user')
 
   return api; // same agent, now authenticated
 }
