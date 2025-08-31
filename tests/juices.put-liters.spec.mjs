@@ -48,6 +48,23 @@ describe('PUT /api/juices/:id/liters', () => {
     expect(Date.parse(jAfter.lastUpdated)).toBe(newStamp)
   })
 
+  it('always bumps lastUpdated even if liters did not change', async () => {
+    const list = await api.get('/api/juices').expect(200)
+    const j0 = list.body[0]
+    const sameLiters = j0.currentLiters
+
+    const res1 = await api.put(`/api/juices/${j0.id}/liters`).send({ liters: sameLiters }).expect(200)
+    const t1 = Date.parse(res1.body.lastUpdated)
+
+    // wait a tiny bit to ensure timestamp difference (depends on precision in your impl)
+    await new Promise(r => setTimeout(r, 25))
+
+    const res2 = await api.put(`/api/juices/${j0.id}/liters`).send({ liters: sameLiters }).expect(200)
+    const t2 = Date.parse(res2.body.lastUpdated)
+
+    expect(t2).toBeGreaterThan(t1)
+  })
+
   it('can set liters BELOW par to derive "BELOW PAR"', async () => {
     const list = await api.get('/api/juices').expect(200)
     const j0 = list.body[0]
@@ -78,5 +95,68 @@ describe('PUT /api/juices/:id/liters', () => {
 
   it('404s on unknown juice id', async () => {
     await api.put('/api/juices/999999/liters').send({ liters: 1 }).expect(404)
+  })
+
+  // --- Added boundary/status/shape tests ---
+
+  it('exactly 0 liters derives status OUT', async () => {
+    const list = await api.get('/api/juices').expect(200)
+    const j0 = list.body[0]
+
+    const res = await api
+      .put(`/api/juices/${j0.id}/liters`)
+      .send({ liters: 0 })
+      .expect(200)
+
+    expect(res.body.currentLiters).toBe(0)
+    expect(res.body.status).toBe('OUT')
+  })
+
+  it('exactly parLiters derives status OK', async () => {
+    const list = await api.get('/api/juices').expect(200)
+    const j0 = list.body[0]
+
+    const res = await api
+      .put(`/api/juices/${j0.id}/liters`)
+      .send({ liters: j0.parLiters })
+      .expect(200)
+
+    expect(res.body.currentLiters).toBeCloseTo(j0.parLiters)
+    expect(res.body.status).toBe('OK')
+  })
+
+  it('accepts the upper bound 30 liters', async () => {
+    const list = await api.get('/api/juices').expect(200)
+    const j0 = list.body[0]
+
+    const res = await api
+      .put(`/api/juices/${j0.id}/liters`)
+      .send({ liters: 30 })
+      .expect(200)
+
+    expect(res.body.currentLiters).toBe(30)
+    expect(typeof res.body.status).toBe('string') // exact status depends on parLiters
+  })
+
+  it('response includes expected shape/fields', async () => {
+    const list = await api.get('/api/juices').expect(200)
+    const j0 = list.body[0]
+
+    const { body } = await api
+      .put(`/api/juices/${j0.id}/liters`)
+      .send({ liters: j0.parLiters })
+      .expect(200)
+
+    // required fields present
+    for (const key of ['id', 'name', 'parLiters', 'currentLiters', 'status', 'lastUpdated']) {
+      expect(body).toHaveProperty(key)
+    }
+    // types look sane
+    expect(typeof body.id).toBe('number')
+    expect(typeof body.name).toBe('string')
+    expect(typeof body.parLiters).toBe('number')
+    expect(typeof body.currentLiters).toBe('number')
+    expect(typeof body.status).toBe('string')
+    expect(Number.isFinite(Date.parse(body.lastUpdated))).toBe(true)
   })
 })
