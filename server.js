@@ -18,6 +18,9 @@ export function createApp({ dbPath = 'db.sqlite', seed = false } = {}) {
   app.use(express.json())
   app.use(express.static('public'))
 
+  // ★ Behind Render's HTTPS proxy: make req.secure true so Secure cookies can be set
+  app.set('trust proxy', 1)
+
   const db = initDb(dbPath)
   if (seed) seedDb(db)
 
