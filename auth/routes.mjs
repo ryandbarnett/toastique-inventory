@@ -61,7 +61,9 @@ export function makeAuthRouter(db) {
     if (user.pin_hash == null) return res.status(409).json({ error: 'PIN not set yet' })
 
     const ok = bcrypt.compareSync(String(pin), user.pin_hash)
-    if (!ok) return res.status(403).json({ error: 'Invalid PIN' })
+    // Wrong PIN -> 401 Unauthorized (generic to avoid info leakage)
+    // Reserve 403 Forbidden for "authenticated but not allowed" cases.
+    if (!ok) return res.status(401).json({ error: 'Invalid credentials' })
 
     req.session.userId = user.id
     res.json({ id: user.id, name: user.name })
