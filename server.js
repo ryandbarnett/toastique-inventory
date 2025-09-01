@@ -42,7 +42,7 @@ export function createApp({ dbPath = 'db.sqlite', seed = false } = {}) {
   // GET /api/juices  (?sort=name|status&dir=asc|desc)
   app.get('/api/juices', (req, res, next) => {
     try {
-      const rows = db.prepare('SELECT id, name, parLiters, currentLiters, lastUpdated FROM juices').all()
+      const rows = juices.listAll()
       const enriched = rows.map(withStatus)
 
       // Read query params with defaults
@@ -77,7 +77,8 @@ export function createApp({ dbPath = 'db.sqlite', seed = false } = {}) {
       if (!exists) return notFound(res)
 
       const now = new Date().toISOString()
-      juices.updateLiters(id, liters, now)
+      const userId = req.session.userId
+      juices.updateLiters(id, liters, userId, now)
 
       const updated = juices.getById(id)
       // ensure returned object matches the update exactly
