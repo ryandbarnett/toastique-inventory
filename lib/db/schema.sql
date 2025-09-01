@@ -3,5 +3,6 @@ CREATE TABLE IF NOT EXISTS juices (
   name TEXT NOT NULL,
   parLiters REAL NOT NULL,
   currentLiters REAL NOT NULL,
-  lastUpdated TEXT NOT NULL
+  lastUpdated TEXT NOT NULL,
+  updated_by INTEGER
 );
