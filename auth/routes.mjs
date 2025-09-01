@@ -1,6 +1,7 @@
 // auth/routes.mjs
 import express from 'express'
 import bcrypt from 'bcryptjs'
+import { isValidPin } from './pinHelpers.mjs'
 
 export function makeAuthRouter(db) {
   const router = express.Router()
@@ -8,7 +9,6 @@ export function makeAuthRouter(db) {
   // Helpers
   const getUserById = db.prepare(`SELECT id, name, pin_hash FROM users WHERE id = ?`)
   const setPin = db.prepare(`UPDATE users SET pin_hash = ? WHERE id = ?`)
-  const userExists = (id) => !!getUserById.get(id)
 
   function requireBodyFields(res, body, fields) {
     for (const f of fields) {
@@ -40,7 +40,7 @@ export function makeAuthRouter(db) {
     // already set?
     if (user.pin_hash != null) return res.status(409).json({ error: 'PIN already set' })
     // 4-digit check
-    if (!/^\d{4}$/.test(String(pin))) return res.status(400).json({ error: 'PIN must be 4 digits' })
+    if (!isValidPin(pin)) return res.status(400).json({ error: 'PIN must be 4 digits' })
     if (pin !== confirm) return res.status(400).json({ error: 'PIN mismatch' })
 
     const hash = bcrypt.hashSync(String(pin), 10)
