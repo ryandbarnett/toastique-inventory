@@ -9,7 +9,7 @@ describe('Juices "updated by"', () => {
     await loginAs(api) // establishes a session
   })
 
-  it('records updater on liters change and returns updatedByName in list', async () => {
+  it('records updater on PUT and returns updatedByName (PUT + list)', async () => {
     // who am I logged in as?
     const me = await api.get('/api/auth/me').expect(200)
     const meName = me.body?.user?.name
@@ -20,9 +20,14 @@ describe('Juices "updated by"', () => {
     const j0 = listBefore.body[0]
 
     // update liters (even same value is fine; we stamp updated_by)
-    await api.put(`/api/juices/${j0.id}/liters`)
+    const putRes = await api
+      .put(`/api/juices/${j0.id}/liters`)
       .send({ liters: j0.currentLiters })
       .expect(200)
+
+    // PUT response is hydrated
+    expect(putRes.body).toHaveProperty('updatedByName')
+    expect(putRes.body.updatedByName).toBe(meName)
 
     // fetch again and verify updatedByName
     const listAfter = await api.get('/api/juices').expect(200)

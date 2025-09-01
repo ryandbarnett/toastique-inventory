@@ -83,6 +83,9 @@ export function createApp({ dbPath = 'db.sqlite', seed = false } = {}) {
       const updated = juices.getById(id)
       // ensure returned object matches the update exactly
       updated.lastUpdated = now
+      // HYDRATE: attach friendly updater name for immediate UI use
+      const me = db.prepare(`SELECT name FROM users WHERE id = ?`).get(userId)
+      updated.updatedByName = me?.name ?? null
       res.json(withStatus(updated))
     } catch (err) { next(err) }
   })
