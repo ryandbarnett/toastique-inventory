@@ -11,5 +11,6 @@ export default defineConfig({
     ],
     environment: 'node',
     globals: true, // you’re already using describe/it/expect globally
+    coverage: { reporter: ['text', 'html'] }
   },
 })
