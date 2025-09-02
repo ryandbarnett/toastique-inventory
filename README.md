@@ -48,6 +48,7 @@ GET /api/juices?sort=status&dir=asc
     "parLiters": 6,
     "currentLiters": 7,
     "lastUpdated": "2025-08-24T09:12:34.000Z",
+    "updatedByName": "Ava",
     "status": "OK"
   },
   {
@@ -56,6 +57,7 @@ GET /api/juices?sort=status&dir=asc
     "parLiters": 4,
     "currentLiters": 3,
     "lastUpdated": "2025-08-24T09:11:10.000Z",
+    "updatedByName": "Rhea",
     "status": "BELOW PAR"
   }
 ]
@@ -86,6 +88,7 @@ Update `currentLiters` for a juice. Also updates `lastUpdated`.
   "parLiters": 4,
   "currentLiters": 5.5,
   "lastUpdated": "2025-08-24T09:20:10.000Z",
+  "updatedByName": "Rhea",
   "status": "OK"
 }
 ```
@@ -116,8 +119,14 @@ Response: `{ "id": 1, "name": "Rhea" }`
 Logout. Returns **204 No Content**.
 
 #### `GET /api/auth/me`
-Returns current session user: `{ "id": 1, "name": "Rhea" }`  
-If not logged in → **401 Unauthorized**.
+Always returns **200** with:
+```
+{ "authenticated": true,  "user": { "id": 1, "name": "Rhea" } }
+```
+or when not logged in:
+```
+{ "authenticated": false, "user": null }
+```
 
 ---
 
@@ -128,12 +137,19 @@ Example `.env` for local dev:
 ```
 DB_PATH=db.sqlite
 PORT=3000
-SEED=true                # seed default juices + users
-SESSION_SECRET=dev-secret # use a long random string in production!
+SEED=true                 # seed default juices + users on first run
+SESSION_SECRET=dev-secret # simple single secret for local only
 ```
 
-- `SESSION_SECRET` is required in production for secure cookie signing.  
-- In development, it falls back to `"dev-secret"` if unset.
+Example `.env` for production:
+
+```
+DB_PATH=/var/data/db.sqlite
+PORT=3000
+NODE_ENV=production
+SEED=false                        # use true only on first deploy, then set back to false
+SESSION_SECRETS=<new>,<previous>  # comma-separated; first signs, rest verify (for rotation)
+```
 
 ---
 
@@ -159,4 +175,4 @@ Coverage includes:
 On Render or other hosts:
 - Set environment variable `SESSION_SECRET` to a long random string.
 - Run with `NODE_ENV=production` for secure session cookies.
-- Use `SEED=true` to seed default juices and users on first deploy.
+- Set SEED=true for the first deploy only, then set it back to SEED=false to avoid re-seeding on restarts.
