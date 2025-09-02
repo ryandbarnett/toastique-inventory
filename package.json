@@ -13,7 +13,6 @@
     "test": "vitest --run",
     "wipe-db": "node scripts/wipeDb.mjs"
   },
-}
   "dependencies": {
     "bcryptjs": "^3.0.2",
     "better-sqlite3": "^9.6.0",
