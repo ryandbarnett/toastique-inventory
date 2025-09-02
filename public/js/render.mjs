@@ -31,7 +31,10 @@ export function renderTable(tbody, juices, { sortMode, sortDir } = {}) {
       <td>
         <span class="status ${statusClass}" ${shortAttr}>${status}</span>
       </td>
-      <td class="muted">${fmtDate(j.lastUpdated)}</td>
+      <td class="muted" title="${(j.updatedByName ? j.updatedByName + ' · ' : '') + (j.lastUpdated || '')}">
+        ${j.updatedByName ? `${j.updatedByName} · ` : ''}
+        ${j.lastUpdated ? fmtDate(j.lastUpdated) : '—'}
+      </td>
       <td class="actions">
         <input
           class="liters-input"

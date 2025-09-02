@@ -31,6 +31,8 @@ h1 {
   margin-bottom: 14px;
 }
 
+td.muted { white-space: nowrap; }
+
 /* Table card */
 table {
   border-collapse: separate;
@@ -212,7 +214,7 @@ button:active {
   /* Predictable widths + no overflow */
   table { table-layout: fixed; max-width: 100%; }
 
-  /* Hide PAR (col 2) and Last Updated (col 5) */
+  /* Hide PAR (col 2) and Updated (col 5) */
   table th:nth-child(2),
   table td:nth-child(2),
   table th:nth-child(5),
