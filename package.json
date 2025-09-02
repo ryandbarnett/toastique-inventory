@@ -10,8 +10,10 @@
     "start": "node server.js",
     "dev": "nodemon server.js",
     "dev:fresh": "rm -f db.sqlite && SEED=true nodemon server.js",
-    "test": "vitest --run"
+    "test": "vitest --run",
+    "wipe-db": "node scripts/wipeDb.mjs"
   },
+}
   "dependencies": {
     "bcryptjs": "^3.0.2",
     "better-sqlite3": "^9.6.0",
