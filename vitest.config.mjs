@@ -3,14 +3,18 @@ import { defineConfig } from 'vitest/config'
 
 export default defineConfig({
   test: {
-    // Pick up your current integration tests…
     include: [
       'tests/**/*.spec.mjs',
-      // …and any colocated unit tests under auth/**/__tests__/
       'auth/**/__tests__/**/*.spec.mjs',
     ],
     environment: 'node',
-    globals: true, // you’re already using describe/it/expect globally
-    coverage: { reporter: ['text', 'html'] }
+    globals: true,
+    coverage: {
+      provider: 'v8',                 // c8/v8 provider
+      reporter: ['text', 'html'],
+      include: ['server.js', 'auth/**', 'lib/**'],  // focus on backend
+      exclude: ['public/**', 'scripts/**'],         // ignore frontend & scripts for now
+      thresholds: { lines: 90, functions: 90, statements: 90, branches: 75 },
+    },
   },
 })

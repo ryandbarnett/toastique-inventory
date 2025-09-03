@@ -98,6 +98,7 @@ export function createApp({ dbPath = 'db.sqlite', seed = false } = {}) {
   return app
 }
 
+/* c8 ignore start */
 // Start the server only when this file is run directly (not when imported by tests)
 if (import.meta.url === `file://${process.argv[1]}`) {
   const PORT = process.env.PORT || 3000;
