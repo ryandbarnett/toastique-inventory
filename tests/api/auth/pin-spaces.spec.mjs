@@ -1,6 +1,6 @@
 // tests/auth.pin-spaces.spec.mjs
 import { describe, it, expect } from 'vitest'
-import { makeApi } from './helpers.mjs'
+import { createTestAgent as makeApi } from '../../helpers/app.mjs'
 
 describe('auth PIN normalization', () => {
   it('accepts surrounding spaces (set-pin -> login)', async () => {

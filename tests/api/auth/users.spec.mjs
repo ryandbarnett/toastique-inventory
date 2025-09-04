@@ -1,6 +1,6 @@
 // tests/auth.users.spec.mjs
 import { describe, it, beforeEach, expect } from 'vitest'
-import { makeApi } from './helpers.mjs'
+import { createTestAgent as makeApi } from '../../helpers/app.mjs'
 
 describe('GET /api/auth/users', () => {
   let api

@@ -1,6 +1,6 @@
 // tests/auth.schema.spec.mjs
 import { describe, it, beforeEach, expect } from 'vitest'
-import { initDb, seedDb, _resetDbForTests } from '../lib/db/index.js'
+import { initDb, seedDb, _resetDbForTests } from '../../../lib/db/index.js'
 
 describe('DB schema: users table + seed', () => {
   let db

@@ -1,6 +1,7 @@
-// tests/juices.get.spec.mjs
+// tests/api/v1/juices.get.spec.mjs
 import { describe, it, beforeEach, expect } from 'vitest'
-import { makeApi } from './helpers.mjs'
+import { createTestAgent, api } from '../../helpers/app.mjs'
+import { expectJSON } from '../../helpers/expect.mjs'
 
 /**
  * GET /api/v1/juices
@@ -13,12 +14,13 @@ import { makeApi } from './helpers.mjs'
  * - lastUpdated is a valid ISO-ish timestamp
  */
 describe('GET /api/v1/juices', () => {
-  let api
-  beforeEach(async () => { api = await makeApi() })
+  let agent
+  beforeEach(() => { agent = createTestAgent() })
 
   it('returns list with derived status', async () => {
-    const res = await api.get('/api/v1/juices').expect(200)
-    expect(Array.isArray(res.body)).toBe(true)
+    const res = await agent.get(api.juices.list()).expect(200)
+    expectJSON(res)
+
     for (const j of res.body) {
       const expected =
         j.currentLiters <= 0
@@ -29,7 +31,9 @@ describe('GET /api/v1/juices', () => {
   })
 
   it('each item has required fields and valid lastUpdated', async () => {
-    const res = await api.get('/api/v1/juices').expect(200)
+    const res = await agent.get(api.juices.list()).expect(200)
+    expectJSON(res)
+
     for (const j of res.body) {
       expect(j).toHaveProperty('id')
       expect(j).toHaveProperty('name')

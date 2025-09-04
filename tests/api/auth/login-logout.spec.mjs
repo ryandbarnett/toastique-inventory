@@ -1,6 +1,6 @@
 // tests/auth.login-logout.spec.mjs
 import { describe, it, beforeEach, expect } from 'vitest'
-import { makeApi } from './helpers.mjs'
+import { createTestAgent as makeApi } from '../../helpers/app.mjs'
 
 /**
  * Auth contract:

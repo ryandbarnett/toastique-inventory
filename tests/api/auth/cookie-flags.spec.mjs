@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { makeApi } from './helpers.mjs'
+import { createTestAgent as makeApi } from '../../helpers/app.mjs'
 
 function getCookieString(setCookieHeader) {
   return Array.isArray(setCookieHeader) ? setCookieHeader[0] : setCookieHeader

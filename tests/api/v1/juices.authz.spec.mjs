@@ -1,22 +1,24 @@
-// tests/juices.authz.spec.mjs
+// tests/api/v1/juices.authz.spec.mjs
 import { describe, it, beforeEach, expect } from 'vitest'
-import { makeApi } from './helpers.mjs'
-import { loginAs } from './auth/helpers.mjs'
+import { createTestAgent, api } from '../../helpers/app.mjs'
+import { loginAs } from '../../helpers/auth.mjs'
 
 describe('Authz on write routes', () => {
-  let api
-  beforeEach(async () => { api = await makeApi({ seed: true }) })
+  let agent
+  beforeEach(async () => { agent = createTestAgent({ seed: true }) })
 
   it('PUT /api/v1/juices/:id/liters → 401 when not logged in', async () => {
-    await api.put('/api/v1/juices/1/liters')
+    await agent
+      .put(api.juices.liters(1))
       .send({ liters: 5 })
       .expect(401)
   })
 
   it('PUT /api/v1/juices/:id/liters → 200 when logged in', async () => {
-    await loginAs(api, 1)
-
-    const res = await api.put('/api/v1/juices/1/liters')
+    await loginAs(agent, 1)
+    
+    const res = await agent
+      .put(api.juices.liters(1))
       .send({ liters: 5 })
       .expect(200)
 
