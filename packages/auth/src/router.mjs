@@ -27,12 +27,14 @@ export function makeAuthRouter({ userRepo, session, paths = {} }) {
     if (!requireBodyFields(res, req.body, ['userId', 'pin', 'confirm'])) return
     const id = Number(req.body.userId)
     const { pin, confirm } = req.body
+    const pinNorm = String(pin).trim()
+    const confirmNorm = String(confirm).trim()
     const u = await userRepo.findById(id)
     if (!u) return sendError(res, 404, 'User not found')
     if (u.pin_hash != null) return sendError(res, 409, 'PIN already set')
-    if (!isValidPin(pin)) return sendError(res, 400, 'PIN must be 4 digits')
-    if (String(pin) !== String(confirm)) return sendError(res, 400, 'PIN mismatch')
-    const hash = bcrypt.hashSync(String(pin), 10)
+    if (!isValidPin(pinNorm)) return sendError(res, 400, 'PIN must be 4 digits')
+    if (pinNorm !== confirmNorm) return sendError(res, 400, 'PIN mismatch')
+    const hash = bcrypt.hashSync(pinNorm, 10)
     await userRepo.setPinHash(id, hash)
     session.setUserId(req, id)
     res.json({ id: u.id, name: u.name })
@@ -42,10 +44,11 @@ export function makeAuthRouter({ userRepo, session, paths = {} }) {
     if (!requireBodyFields(res, req.body, ['userId', 'pin'])) return
     const id = Number(req.body.userId)
     const { pin } = req.body
+    const pinNorm = String(pin).trim()
     const u = await userRepo.findById(id)
     if (!u) return sendError(res, 404, 'User not found')
     if (u.pin_hash == null) return sendError(res, 409, 'PIN not set')
-    const ok = bcrypt.compareSync(String(pin), u.pin_hash)
+    const ok = bcrypt.compareSync(pinNorm, u.pin_hash)
     if (!ok) return sendError(res, 401, 'Invalid credentials')
     session.setUserId(req, id)
     res.json({ id: u.id, name: u.name })
