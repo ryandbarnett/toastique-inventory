@@ -6,10 +6,7 @@ import { makeJuicesRepo } from './lib/repo/juices.js'
 import { listJuices, updateJuiceLiters } from './lib/service/juices.js'
 import { makeUserRepo } from './lib/repo/users.mjs'
 import { installAuth } from './packages/auth/src/index.mjs'
-
-function notFound(res) {
-  return res.status(404).json({ error: 'Not Found' })
-}
+import { makeErrorHandler } from './lib/http/errors.mjs'
 
 /**
  * @param {{ dbPath?: string, seed?: boolean }} opts
@@ -57,10 +54,7 @@ export function createApp({ dbPath = 'db.sqlite', seed = false } = {}) {
     } catch (err) { next(err) }
   })
 
-  app.use((err, _req, res, _next) => {
-    console.error(err)
-    res.status(500).json({ error: 'Internal Server Error' })
-  })
+  app.use(makeErrorHandler())
 
   return app
 }
