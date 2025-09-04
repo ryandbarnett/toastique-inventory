@@ -172,7 +172,7 @@ Notes:
     ```js
     { findById(id), listUsers(), setPinHash(id, hash) }
     ```
-  - `auth/schema.sql`, `auth/seed.mjs` → users table + seed data
+  - `lib/db/schema.auth.sql`, `lib/db/seed.auth.mjs` → users table + seed data
   - `server.js` wires:
     ```js
     const session = makeCookieSession({...})
