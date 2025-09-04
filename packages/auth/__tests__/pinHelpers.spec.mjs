@@ -1,6 +1,6 @@
 // auth/__tests__/pinHelpers.spec.mjs
 import { describe, it, expect } from 'vitest'
-import { isValidPin } from '../pinHelpers.mjs'
+import { isValidPin } from '../src/crypto/pin.mjs'
 
 describe('isValidPin', () => {
   it('accepts exactly 4 digits', () => {

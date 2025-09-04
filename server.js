@@ -4,7 +4,9 @@ import express from 'express'
 import { initDb, seedDb } from './lib/db/index.js'
 import { makeJuicesRepo } from './lib/repo/juices.js'
 import { withStatus, validateLiters } from './lib/service/juices.js'
-import { mountAuth, requireAuth } from './auth/index.mjs'
+import { makeUserRepo } from './lib/repo/users.mjs'
+import { mountAuth as mountAuthPkg, requireAuth as requireAuthPkg } from './packages/auth/src/index.mjs'
+import { makeCookieSession } from './packages/auth/src/adapters/session/cookie-session.mjs'
 
 function notFound(res) {
   return res.status(404).json({ error: 'Not Found' })
@@ -25,19 +27,19 @@ export function createApp({ dbPath = 'db.sqlite', seed = false } = {}) {
   if (seed) seedDb(db)
 
   const juices = makeJuicesRepo(db)
+  const users  = makeUserRepo(db)
 
   // --- Auth: mount session + /api/auth with one call
-  // (Keeping your previous cookie-session name/keys via overrides)
-  mountAuth(app, db, {
-    session: {
-      name: 'sid',
-      keys: [process.env.SESSION_SECRET || 'dev-secret'],
-      sameSite: 'lax',
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      maxAge: 7 * 24 * 60 * 60 * 1000,
-    }
+  const session = makeCookieSession({
+    name: 'sid',
+    keys: [process.env.SESSION_SECRET || 'dev-secret'],
+    sameSite: 'lax',
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    maxAge: 7 * 24 * 60 * 60 * 1000,
   })
+  mountAuthPkg(app, { userRepo: users, session })
+  const authRequired = requireAuthPkg(session)
 
   // GET /api/juices  (?sort=name|status&dir=asc|desc)
   app.get('/api/juices', (req, res, next) => {
@@ -64,7 +66,7 @@ export function createApp({ dbPath = 'db.sqlite', seed = false } = {}) {
   })
 
   // PUT /api/juices/:id/liters (protected)
-  app.put('/api/juices/:id/liters', requireAuth, (req, res, next) => {
+  app.put('/api/juices/:id/liters', authRequired, (req, res, next) => {
     try {
       const id = Number(req.params.id)
       if (!Number.isInteger(id)) return notFound(res)
