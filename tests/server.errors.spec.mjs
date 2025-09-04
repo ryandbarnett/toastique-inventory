@@ -28,12 +28,12 @@ describe('server: 404s, validation, auth, and error middleware', () => {
 
   it('returns 401 when not authenticated', async () => {
     // Use a fresh non-agent request to ensure no cookie is present
-    await request(app).put('/api/juices/1/liters').send({ liters: 1 }).expect(401)
+    await request(app).put('/api/v1/juices/1/liters').send({ liters: 1 }).expect(401)
   })
 
   it('returns 404 when id is not an integer', async () => {
     const res = await agent
-      .put('/api/juices/abc/liters') // invalid id
+      .put('/api/v1/juices/abc/liters') // invalid id
       .send({ liters: 1 })
       .expect(404)
     expect(res.body).toMatchObject({ error: 'Not Found' })
@@ -41,7 +41,7 @@ describe('server: 404s, validation, auth, and error middleware', () => {
 
   it('returns 404 when juice does not exist', async () => {
     const res = await agent
-      .put('/api/juices/99999/liters') // non-existent juice
+      .put('/api/v1/juices/99999/liters') // non-existent juice
       .send({ liters: 1 })
       .expect(404)
     expect(res.body).toMatchObject({ error: 'Not Found' })
@@ -49,7 +49,7 @@ describe('server: 404s, validation, auth, and error middleware', () => {
 
   it('returns 400 on invalid liters payload', async () => {
     const res = await agent
-      .put('/api/juices/1/liters')
+      .put('/api/v1/juices/1/liters')
       .send({ liters: 'NaN' }) // invalid
       .expect(400)
     expect(res.body).toHaveProperty('error')
@@ -58,7 +58,7 @@ describe('server: 404s, validation, auth, and error middleware', () => {
   it('malformed JSON triggers error middleware (500 JSON)', async () => {
     // express.json() runs before session; this exercises the 500 handler
     const res = await agent
-      .post('/api/juices/1/liters')
+      .post('/api/v1/juices/1/liters')
       .set('Content-Type', 'application/json')
       .send('{"badJson":') // malformed JSON
       .expect(500)

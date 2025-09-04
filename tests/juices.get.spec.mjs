@@ -3,7 +3,7 @@ import { describe, it, beforeEach, expect } from 'vitest'
 import { makeApi } from './helpers.mjs'
 
 /**
- * GET /api/juices
+ * GET /api/v1/juices
  * Contract:
  * - 200 OK: returns array of { id, name, parLiters, currentLiters, lastUpdated, status }
  * - status derivation:
@@ -12,12 +12,12 @@ import { makeApi } from './helpers.mjs'
  *    - BELOW PAR otherwise
  * - lastUpdated is a valid ISO-ish timestamp
  */
-describe('GET /api/juices', () => {
+describe('GET /api/v1/juices', () => {
   let api
   beforeEach(async () => { api = await makeApi() })
 
   it('returns list with derived status', async () => {
-    const res = await api.get('/api/juices').expect(200)
+    const res = await api.get('/api/v1/juices').expect(200)
     expect(Array.isArray(res.body)).toBe(true)
     for (const j of res.body) {
       const expected =
@@ -29,7 +29,7 @@ describe('GET /api/juices', () => {
   })
 
   it('each item has required fields and valid lastUpdated', async () => {
-    const res = await api.get('/api/juices').expect(200)
+    const res = await api.get('/api/v1/juices').expect(200)
     for (const j of res.body) {
       expect(j).toHaveProperty('id')
       expect(j).toHaveProperty('name')

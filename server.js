@@ -30,6 +30,7 @@ export function createApp({ dbPath = 'db.sqlite', seed = false } = {}) {
   const { requireAuth: authRequired } = installAuth(app, { userRepo: users, env: process.env })
 
   // Mount routers
+  // NEW (v1)
   app.use('/api/v1/juices', makeJuicesRouter({
     juicesRepo: juices,
     usersRepo: users,

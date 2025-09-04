@@ -16,12 +16,12 @@ describe('Juices "updated by"', () => {
     expect(typeof meName).toBe('string')
 
     // pick a juice
-    const listBefore = await api.get('/api/juices').expect(200)
+    const listBefore = await api.get('/api/v1/juices').expect(200)
     const j0 = listBefore.body[0]
 
     // update liters (even same value is fine; we stamp updated_by)
     const putRes = await api
-      .put(`/api/juices/${j0.id}/liters`)
+      .put(`/api/v1/juices/${j0.id}/liters`)
       .send({ liters: j0.currentLiters })
       .expect(200)
 
@@ -30,7 +30,7 @@ describe('Juices "updated by"', () => {
     expect(putRes.body.updatedByName).toBe(meName)
 
     // fetch again and verify updatedByName
-    const listAfter = await api.get('/api/juices').expect(200)
+    const listAfter = await api.get('/api/v1/juices').expect(200)
     const refreshed = listAfter.body.find(x => x.id === j0.id)
     expect(refreshed).toBeTruthy()
     expect(refreshed.updatedByName).toBe(meName)
