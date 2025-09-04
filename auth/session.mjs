@@ -25,6 +25,18 @@ export function cookieSessionMw(overrides = {}) {
 
   const finalKeys = keys || envSecrets || ['dev-secret']
 
+  // Enforce secrets in production
+  if (process.env.NODE_ENV === 'production') {
+    const missing = !finalKeys || (
+      Array.isArray(finalKeys) &&
+      finalKeys.length === 1 &&
+      finalKeys[0] === 'dev-secret'
+    );
+    if (missing) {
+      throw new Error('SESSION_SECRET(S) must be set in production');
+    }
+  }
+
   return cookieSession({
     name,
     keys: finalKeys,

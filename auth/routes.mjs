@@ -2,9 +2,7 @@
 import express from 'express'
 import bcrypt from 'bcryptjs'
 import { isValidPin } from './pinHelpers.mjs'
-import { sendError } from './errorHelpers.mjs'
-import { requireBodyFields } from './bodyHelpers.mjs'
-import { startSession, clearSession } from './sessionHelpers.mjs'
+import { sendError, requireBodyFields, startSession, clearSession } from './helpers.mjs'
 
 export function makeAuthRouter(db) {
   const router = express.Router()
