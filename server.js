@@ -3,10 +3,11 @@ import 'dotenv/config'
 import express from 'express'
 import { initDb, seedDb } from './lib/db/index.js'
 import { makeJuicesRepo } from './lib/repo/juices.js'
-import { listJuices, updateJuiceLiters } from './lib/service/juices.js'
 import { makeUserRepo } from './lib/repo/users.mjs'
 import { installAuth } from './packages/auth/src/index.mjs'
-import { makeErrorHandler } from './lib/http/errors.mjs'
+import { makeErrorHandler, notFound } from './lib/http/errors.mjs'
+import { loadConfig } from './lib/config.mjs'
+import { makeJuicesRouter, makeHealthRouter } from './lib/http/routes'
 
 /**
  * @param {{ dbPath?: string, seed?: boolean }} opts
@@ -28,31 +29,16 @@ export function createApp({ dbPath = 'db.sqlite', seed = false } = {}) {
   // --- Auth: one-liner bootstrap
   const { requireAuth: authRequired } = installAuth(app, { userRepo: users, env: process.env })
 
-  // GET /api/juices  (?sort=name|status&dir=asc|desc)
-  app.get('/api/juices', (req, res, next) => {
-    try {
-      const sort = req.query.sort
-      const dir  = req.query.dir
-      res.json(listJuices({ repo: juices, sort, dir }))
-    } catch (err) { next(err) }
-  })
+  // Mount routers
+  app.use('/api/v1/juices', makeJuicesRouter({
+    juicesRepo: juices,
+    usersRepo: users,
+    requireAuth: authRequired,
+  }))
 
-  // PUT /api/juices/:id/liters (protected)
-  app.put('/api/juices/:id/liters', authRequired, (req, res, next) => {
-    try {
-      const id = Number(req.params.id)
-      const liters = req.body?.liters
-      const userId = req.session.userId
-      const result = updateJuiceLiters({ repo: juices, users, id, liters, userId })
-      if (result?.ok) {
-        return res.json(result.body)
-      }
-      if (result?.error) {
-        return res.status(result.error).json(result.body)
-      }
-      throw new Error('Unexpected updateJuiceLiters result')
-    } catch (err) { next(err) }
-  })
+  app.use('/api/v1', makeHealthRouter())
+
+  app.use('/api/v1', (_req, res) => notFound(res, 'API route not found'))
 
   app.use(makeErrorHandler())
 
@@ -62,16 +48,14 @@ export function createApp({ dbPath = 'db.sqlite', seed = false } = {}) {
 /* c8 ignore start */
 // Start the server only when this file is run directly (not when imported by tests)
 if (import.meta.url === `file://${process.argv[1]}`) {
-  const PORT = process.env.PORT || 3000;
-  const DB_PATH = process.env.DB_PATH || '/var/data/db.sqlite';
-  const SEED = String(process.env.SEED).toLowerCase() === 'true';
+  const config = loadConfig(process.env)
+  console.log('ENV → DB_PATH:', process.env.DB_PATH || '(unset)')
+  console.log('Using DB path:', config.dbPath)
+  console.log('ENV → SEED:', config.seed)
+  console.log('ENV → NODE_ENV:', config.nodeEnv)
 
-  console.log('ENV → DB_PATH:', process.env.DB_PATH || '(unset)');
-  console.log('Using DB path:', DB_PATH);
-  console.log('ENV → SEED:', SEED);
-
-  const app = createApp({ dbPath: DB_PATH, seed: SEED });
-  app.listen(PORT, () => {
-    console.log(`🚀 Server listening on http://localhost:${PORT}`);
-  });
+  const app = createApp({ dbPath: config.dbPath, seed: config.seed })
+  app.listen(config.port, () => {
+    console.log(`🚀 Server listening on http://localhost:${config.port}`)
+  })
 }
