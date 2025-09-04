@@ -12,3 +12,4 @@ export function mountAuth(app, db, { session } = {}) {
 }
 
 export { requireAuth }
+// DEPRECATED: runtime moved to packages/auth. Keep this file until we migrate tests.

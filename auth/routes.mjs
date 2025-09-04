@@ -89,3 +89,4 @@ export function makeAuthRouter(db) {
 
   return router
 }
+// DEPRECATED: runtime moved to packages/auth. Keep this file until we migrate tests.

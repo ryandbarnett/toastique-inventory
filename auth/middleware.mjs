@@ -4,3 +4,4 @@ export function requireAuth(req, res, next) {
   }
   next()
 }
+// DEPRECATED: runtime moved to packages/auth. Keep this file until we migrate tests.
