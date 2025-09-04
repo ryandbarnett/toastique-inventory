@@ -3,13 +3,13 @@ import request from 'supertest'
 import { createApp } from '../../server.js'
 
 // Build a fresh app (seeded in-memory DB by default)
-export function buildApp({ seed = true } = {}) {
-  return createApp({ dbPath: ':memory:', seed })
+export function buildApp({ seed = true, authSecurity } = {}) {
+  return createApp({ dbPath: ':memory:', seed, authSecurity })
 }
 
 // Create a supertest *agent* against a fresh seeded app
-export function createTestAgent({ seed = true } = {}) {
-  const app = buildApp({ seed })
+export function createTestAgent({ seed = true, authSecurity } = {}) {
+  const app = buildApp({ seed, authSecurity })
   return request.agent(app)
 }
 

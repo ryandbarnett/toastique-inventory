@@ -12,7 +12,7 @@ import { makeJuicesRouter, makeHealthRouter } from './lib/http/routes'
 /**
  * @param {{ dbPath?: string, seed?: boolean }} opts
  */
-export function createApp({ dbPath = 'db.sqlite', seed = false } = {}) {
+export function createApp({ dbPath = 'db.sqlite', seed = false, authSecurity } = {}) {
   const app = express()
   app.use(express.json())
   app.use(express.static('public'))
@@ -27,7 +27,11 @@ export function createApp({ dbPath = 'db.sqlite', seed = false } = {}) {
   const users  = makeUserRepo(db)
 
   // --- Auth: one-liner bootstrap
-  const { requireAuth: authRequired } = installAuth(app, { userRepo: users, env: process.env })
+  const { requireAuth: authRequired } = installAuth(app, {
+    userRepo: users,
+    env: process.env,
+    security: authSecurity, // allow test override from tests/helpers
+  })
 
   // Mount routers
   // NEW (v1)
