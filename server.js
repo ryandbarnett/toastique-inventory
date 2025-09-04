@@ -3,10 +3,9 @@ import 'dotenv/config'
 import express from 'express'
 import { initDb, seedDb } from './lib/db/index.js'
 import { makeJuicesRepo } from './lib/repo/juices.js'
-import { withStatus, validateLiters } from './lib/service/juices.js'
+import { listJuices, updateJuiceLiters } from './lib/service/juices.js'
 import { makeUserRepo } from './lib/repo/users.mjs'
-import { mountAuth as mountAuthPkg, requireAuth as requireAuthPkg } from './packages/auth/src/index.mjs'
-import { makeCookieSession } from './packages/auth/src/adapters/session/cookie-session.mjs'
+import { installAuth } from './packages/auth/src/index.mjs'
 
 function notFound(res) {
   return res.status(404).json({ error: 'Not Found' })
@@ -29,39 +28,15 @@ export function createApp({ dbPath = 'db.sqlite', seed = false } = {}) {
   const juices = makeJuicesRepo(db)
   const users  = makeUserRepo(db)
 
-  // --- Auth: mount session + /api/auth with one call
-  const session = makeCookieSession({
-    name: 'sid',
-    keys: [process.env.SESSION_SECRET || 'dev-secret'],
-    sameSite: 'lax',
-    httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    maxAge: 7 * 24 * 60 * 60 * 1000,
-  })
-  mountAuthPkg(app, { userRepo: users, session })
-  const authRequired = requireAuthPkg(session)
+  // --- Auth: one-liner bootstrap
+  const { requireAuth: authRequired } = installAuth(app, { userRepo: users, env: process.env })
 
   // GET /api/juices  (?sort=name|status&dir=asc|desc)
   app.get('/api/juices', (req, res, next) => {
     try {
-      const rows = juices.listAll()
-      const enriched = rows.map(withStatus)
-
-      // Read query params with defaults
-      const sort = String(req.query.sort || 'name')
-      const dir  = String(req.query.dir  || 'asc')
-
-      // Status ranking for sorting:
-      // OUT < BELOW PAR < OK (tie-break by name)
-      const rank = { 'OUT': 0, 'BELOW PAR': 1, 'OK': 2 }
-      const byName   = (a, b) => a.name.localeCompare(b.name)
-      const byStatus = (a, b) => (rank[a.status] - rank[b.status]) || a.name.localeCompare(b.name)
-
-      const cmp = sort === 'status' ? byStatus : byName
-      enriched.sort(cmp)
-      if (dir === 'desc') { enriched.reverse() }
-
-      res.json(enriched)
+      const sort = req.query.sort
+      const dir  = req.query.dir
+      res.json(listJuices({ repo: juices, sort, dir }))
     } catch (err) { next(err) }
   })
 
@@ -69,26 +44,16 @@ export function createApp({ dbPath = 'db.sqlite', seed = false } = {}) {
   app.put('/api/juices/:id/liters', authRequired, (req, res, next) => {
     try {
       const id = Number(req.params.id)
-      if (!Number.isInteger(id)) return notFound(res)
-
-      const { liters } = req.body ?? {}
-      const v = validateLiters(liters)
-      if (!v.ok) return res.status(400).json({ error: v.message })
-
-      const exists = juices.exists(id)
-      if (!exists) return notFound(res)
-
-      const now = new Date().toISOString()
+      const liters = req.body?.liters
       const userId = req.session.userId
-      juices.updateLiters(id, liters, userId, now)
-
-      const updated = juices.getById(id)
-      // ensure returned object matches the update exactly
-      updated.lastUpdated = now
-      // HYDRATE: attach friendly updater name for immediate UI use
-      const me = db.prepare(`SELECT name FROM users WHERE id = ?`).get(userId)
-      updated.updatedByName = me?.name ?? null
-      res.json(withStatus(updated))
+      const result = updateJuiceLiters({ repo: juices, users, id, liters, userId })
+      if (result?.ok) {
+        return res.json(result.body)
+      }
+      if (result?.error) {
+        return res.status(result.error).json(result.body)
+      }
+      throw new Error('Unexpected updateJuiceLiters result')
     } catch (err) { next(err) }
   })
 
