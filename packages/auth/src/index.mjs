@@ -1,3 +1,4 @@
+// packages/auth/src/index.mjs
 import { makeAuthRouter } from './router.mjs'
 import { makeRequireAuth } from './middleware.mjs'
 import { makeCookieSession } from './adapters/session/cookie-session.mjs'

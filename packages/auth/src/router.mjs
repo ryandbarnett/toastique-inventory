@@ -1,3 +1,4 @@
+// packages/auth/src/router.mjs
 import express from 'express'
 // ❌ remove direct bcrypt usage in this file
 // import bcrypt from 'bcryptjs'

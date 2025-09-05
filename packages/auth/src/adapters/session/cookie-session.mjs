@@ -1,3 +1,4 @@
+// packages/auth/src/adapters/session/cookie-session.mjs
 import cookieSession from 'cookie-session'
 
 export function makeCookieSession(overrides = {}) {
