@@ -7,7 +7,7 @@ import { makeUserRepo } from './lib/repo/users.mjs'
 import { installAuth } from './packages/auth/src/index.mjs'
 import { makeErrorHandler, notFound } from './lib/http/errors.mjs'
 import { loadConfig } from './lib/config.mjs'
-import { makeJuicesRouter, makeHealthRouter } from './lib/http/routes'
+import { makeJuicesRouter, makeHealthRouter } from './lib/http/routes/index.mjs'
 
 /**
  * @param {{ dbPath?: string, seed?: boolean }} opts
