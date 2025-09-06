@@ -1,5 +1,5 @@
 // public/js/render/interactions.mjs
-import { updateLiters, updatePar } from '../api.mjs';
+import { updateLiters, updatePar } from '../api/index.mjs';
 import { showToast } from './notify.mjs';
 import { LITERS_MIN, LITERS_MAX, PAR_MIN, PAR_MAX, PAR_STEP } from './config.mjs';
 

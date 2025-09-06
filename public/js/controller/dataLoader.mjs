@@ -1,5 +1,5 @@
 // public/js/controller/dataLoader.mjs
-import { fetchJuices } from '../api.mjs';
+import { fetchJuices } from '../api/index.mjs';
 
 export function createDataLoader({ state, tbody, rerender, showLoadError }) {
   let listAbort = null;
