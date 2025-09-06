@@ -1,9 +1,18 @@
 // public/js/render/table.mjs
 import { code3, getStatus, fmtDate } from '../utils.mjs';
+import { LITERS_MIN, LITERS_MAX, LITERS_STEP, PAR_MIN, PAR_MAX, PAR_STEP } from './config.mjs';
 
 export function renderTable(tbody, juices, { isAdmin = false } = {}) {
   tbody.innerHTML = '';
   const frag = document.createDocumentFragment();
+
+  if (!juices || juices.length === 0) {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td colspan="6" class="muted empty">No juices yet</td>`;
+    frag.appendChild(tr);
+    tbody.appendChild(frag);
+    return { below: 0, out: 0, total: 0 };
+  }
 
   let below = 0;
   let out = 0;
@@ -43,9 +52,9 @@ function rowHTML(j, status, isAdmin) {
           <input
             class="par-input"
             type="number"
-            step="0.5"
-            min="0"
-            max="10"
+            step="${PAR_STEP}"
+            min="${PAR_MIN}"
+            max="${PAR_MAX}"
             inputmode="decimal"
             enterkeyhint="done"
             value="${j.parLiters}"
@@ -70,9 +79,9 @@ function rowHTML(j, status, isAdmin) {
       <input
         class="liters-input"
         type="number"
-        step="0.1"
-        min="0"
-        max="30"
+        step="${LITERS_STEP}"
+        min="${LITERS_MIN}"
+        max="${LITERS_MAX}"
         inputmode="decimal"
         enterkeyhint="done"
         value="${j.currentLiters}"

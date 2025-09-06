@@ -1,6 +1,7 @@
 // public/js/render/interactions.mjs
 import { updateLiters, updatePar } from '../api.mjs';
 import { showToast } from './notify.mjs';
+import { LITERS_MIN, LITERS_MAX, PAR_MIN, PAR_MAX, PAR_STEP } from './config.mjs';
 
 export function wireTableInteractions(tbody, { onSaveRequest }) {
   // Click any Save (liters or PAR)
@@ -16,7 +17,7 @@ export function wireTableInteractions(tbody, { onSaveRequest }) {
       if (!input) return;
 
       const liters = normalizeLiters(input.value);
-      if (liters == null) return void showToast('Enter a number between 0 and 30.');
+      if (liters == null) return void showToast(`Enter a number between ${LITERS_MIN} and ${LITERS_MAX}.`);
       if (String(liters) === (input.dataset.original ?? '')) {
         return void showToast('No changes to save');
       }
@@ -32,7 +33,7 @@ export function wireTableInteractions(tbody, { onSaveRequest }) {
       if (!input) return;
 
       const par = normalizePar(input.value);
-      if (par == null) return void showToast('Enter a PAR between 0 and 10 (0.5 steps).');
+      if (par == null) return void showToast(`Enter a PAR between ${PAR_MIN} and ${PAR_MAX} (${PAR_STEP} steps).`);
       if (String(par) === (input.dataset.original ?? '')) {
         return void showToast('No changes to save');
       }
@@ -88,28 +89,28 @@ function toId(x) {
 function normalizeLiters(raw) {
   const n = Number(String(raw).trim());
   if (!Number.isFinite(n)) return null;
-  if (n < 0 || n > 30) return null;
+  if (n < LITERS_MIN || n > LITERS_MAX) return null;
   return n;
 }
 
 function clampLiters(raw) {
   const n = Number(String(raw).trim());
   if (!Number.isFinite(n)) return null;
-  return Math.min(30, Math.max(0, n));
+  return Math.min(LITERS_MAX, Math.max(LITERS_MIN, n));
 }
 
 function normalizePar(raw) {
   const n = Number(String(raw).trim());
   if (!Number.isFinite(n)) return null;
-  if (n < 0 || n > 10) return null;
-  return Math.round(n * 2) / 2; // 0.5 steps
+  if (n < PAR_MIN || n > PAR_MAX) return null;
+  return Math.round(n / PAR_STEP) * PAR_STEP;
 }
 
 function clampPar(raw) {
   const n = Number(String(raw).trim());
   if (!Number.isFinite(n)) return null;
-  const clamped = Math.min(10, Math.max(0, n));
-  return Math.round(clamped * 2) / 2;
+  const clamped = Math.min(PAR_MAX, Math.max(PAR_MIN, n));
+  return Math.round(clamped / PAR_STEP) * PAR_STEP;
 }
 
 async function doSaveLiters(btn, input, id, liters, onSaveRequest) {
