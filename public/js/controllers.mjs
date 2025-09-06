@@ -1,5 +1,5 @@
 // public/js/controllers.mjs
-import { wireTableInteractions, wireSorting } from './render.mjs';
+import { wireTableInteractions, wireSorting } from './render/index.mjs';
 import { createView } from './controller/view.mjs';
 
 import { createState } from './controller/state.mjs';
