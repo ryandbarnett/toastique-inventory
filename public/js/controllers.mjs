@@ -1,108 +1,83 @@
 // public/js/controllers.mjs
-// Orchestrates state + wiring
-import { fetchJuices } from './api.mjs';
-import { fetchMe } from './auth/api.mjs';
-import { makeAuthUI } from './auth/ui.mjs';
-import { renderTable, wireTableInteractions, wireSorting, applySortHeaderState } from './render.mjs';
+import { wireTableInteractions, wireSorting } from './render.mjs';
+import { createView } from './controller/view.mjs';
 
+import { createState } from './controller/state.mjs';
+import { setEditEnabled } from './controller/permissions.mjs';
+import { createDataLoader } from './controller/dataLoader.mjs';
+import { createAuthBridge } from './controller/authBridge.mjs';
+
+/**
+ * Creates the frontend controller (composition root).
+ */
 export function makeFrontendController({
   tableBodySelector = '#tb',
   metaSelector = '#meta',
   headerSelector = 'thead',
   authBoxSelector = '#authbox',
 } = {}) {
-  const tbody = document.querySelector(tableBodySelector);
-  const meta  = document.querySelector(metaSelector);
-  const thead = document.querySelector(headerSelector);
+  const tbody   = document.querySelector(tableBodySelector);
+  const meta    = document.querySelector(metaSelector);
+  const thead   = document.querySelector(headerSelector);
   const authbox = document.querySelector(authBoxSelector);
 
-  let cache = [];
-  let sortMode = 'name';  // 'name' | 'status'
-  let sortDir  = 'asc';   // 'asc'  | 'desc'
-  let currentUser = null;  // { id, name } | null
-  const isAdmin = () => currentUser?.role === 'admin';
+  const state = createState();
 
-  function getState() { return { sortMode, sortDir }; }
+  // View (table + meta + sort arrow + permission gates)
+  const view = createView({ tbody, metaEl: meta, thead, state });
+  const rerender = () => view.render();
 
-  function setMeta({ total, below, out }, { sortMode, sortDir }) {
-    if (!meta) return;
-    const labels = { name: 'Name', status: 'Status' };
-    const arrow = sortDir === 'asc' ? '↑' : '↓';
-    const sortLabel = labels[sortMode] ?? sortMode;
-    meta.textContent = `${total} juices • ${below} below PAR • ${out} out — sorted by ${sortLabel} (${arrow})`;
-  }
-
-  function setEditEnabled(enabled) {
-    // Gate inputs/buttons visually when logged out
-    tbody.querySelectorAll('.liters-input').forEach(i => { i.disabled = !enabled; });
-    tbody.querySelectorAll('.save-btn').forEach(b => { b.disabled = !enabled; });
-  }
-
-  // Auth UI (moved to public/js/auth/ui.mjs)
-  const authUI = makeAuthUI({
-    authbox,
-    getCurrentUser: () => currentUser,
-    setCurrentUser: (u) => { currentUser = u; },
-    setEditEnabled,
-    toastSelector: '#notify',
+  // Data loader (handles aborts + rerender)
+  const { refetchAndRender, destroy: destroyLoader } = createDataLoader({
+    state,
+    tbody,
+    rerender,
+    showLoadError: view.showLoadError,
   });
 
-  function rerender() {
-    console.debug('rerender → currentUser:', currentUser, 'isAdmin:', currentUser?.role === 'admin');
-    const counts = renderTable(tbody, cache, { sortMode, sortDir, isAdmin: isAdmin() });
-    setMeta(counts, { sortMode, sortDir });
-    applySortHeaderState(thead, { sortMode, sortDir });
-    // enforce editability:
-    // - liters inputs require any login (existing behavior)
-    // - PAR inputs require admin
-    setEditEnabled(!!currentUser);
-    tbody.querySelectorAll('.par-input, .save-par-btn').forEach(el => {
-      el.disabled = !isAdmin();
-    });
-  }
-
-  async function refetchAndRender() {
-    cache = await fetchJuices({ sort: sortMode, dir: sortDir });
-    rerender();
-  }
+  // Auth bridge (bootstrap + window auth events)
+  const auth = createAuthBridge({
+    state,
+    authbox,
+    setEditEnabled: (enabled) => setEditEnabled(tbody, enabled),
+    onAuthChanged: async () => {
+      view.render();            // reflect permissions immediately
+      await refetchAndRender(); // refresh data (updatedByName, etc.)
+    }
+  });
 
   function onSortChange(mode, dir) {
-    sortMode = mode;
-    sortDir = dir;
+    state.setSort(mode, dir);
+    view.reflectSortOnly(); // instant arrow feedback
     refetchAndRender();
   }
 
+  let _inited = false;
+
   async function init() {
+    if (_inited) return;
+    _inited = true;
+
     wireTableInteractions(tbody, { onSaveRequest: refetchAndRender });
-    wireSorting(thead, { getState, onSortChange });
+    wireSorting(thead, { getState: state.getSort, onSortChange });
 
-    try {
-      const u = await fetchMe();  // expect { id, name, role } after our backend change
-      currentUser = u;
-      console.debug('init → fetchMe():', u);
-      authUI.render();
-      // Ensure first paint respects admin flag even before data loads
-      rerender();
-    } catch (err) {
-      console.debug('fetchMe error:', err?.message || err);
-    }
+    // Bootstrap auth (renders auth UI if logged in)
+    await auth.bootstrap();
 
-    // 🔔 React to login/logout from the auth UI
-    window.addEventListener('auth:changed', async (e) => {
-      currentUser = e.detail || null; // { id, name, role } or null
-      // Paint immediately so the PAR editor toggles correctly
-      rerender();
-      // Then refresh the data (status text, updatedByName, etc.)
-      await refetchAndRender();
-    });
+    // First paint respects admin flag even before data arrives
+    view.render();
 
-    try {
-      await refetchAndRender();
-    } catch (err) {
-      console.error(err);
-      tbody.innerHTML = `<tr><td colspan="6">Failed to load.</td></tr>`;
-    }
+    // Load list
+    await refetchAndRender();
   }
 
-  return { init, reload: refetchAndRender };
+  function destroy() {
+    if (!_inited) return;
+    _inited = false;
+
+    destroyLoader();
+    auth.destroy();
+  }
+
+  return { init, reload: refetchAndRender, destroy };
 }
