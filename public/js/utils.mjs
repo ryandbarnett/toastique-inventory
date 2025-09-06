@@ -1,5 +1,16 @@
 // public/js/utils.mjs
 
+export const STATUS = {
+  OK: 'OK',
+  BELOW: 'BELOW PAR',
+  OUT: 'OUT',
+};
+
+const safeNum = (v) => {
+  const n = Number(v);
+  return Number.isFinite(n) ? n : NaN;
+};
+
 /**
  * Derive status from a juice record.
  * OK: current >= par
@@ -7,11 +18,11 @@
  * OUT: current <= 0 (or invalid)
  */
 export function getStatus(j) {
-  const cur = Number(j?.currentLiters);
-  const par = Number(j?.parLiters);
-  if (!Number.isFinite(cur) || cur <= 0) return 'OUT';
-  if (Number.isFinite(par) && cur < par) return 'BELOW PAR';
-  return 'OK';
+  const cur = safeNum(j?.currentLiters);
+  const par = safeNum(j?.parLiters);
+  if (!Number.isFinite(cur) || cur <= 0) return STATUS.OUT;
+  if (Number.isFinite(par) && cur < par) return STATUS.BELOW;
+  return STATUS.OK;
 }
 
 /**
@@ -33,12 +44,15 @@ export function code3(name = '') {
 export function fmtDate(iso) {
   const d = new Date(iso);
   if (Number.isNaN(d.valueOf())) return '';
-  // Localized, readable (e.g., "Aug 24, 2025, 09:12 AM")
-  return new Intl.DateTimeFormat(undefined, {
-    year: 'numeric',
-    month: 'short',
-    day: '2-digit',
-    hour: '2-digit',
-    minute: '2-digit'
-  }).format(d);
+  // Reuse a single formatter (perf)
+  if (!fmtDate._fmt) {
+    fmtDate._fmt = new Intl.DateTimeFormat(undefined, {
+      year: 'numeric',
+      month: 'short',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+    });
+  }
+  return fmtDate._fmt.format(d);
 }

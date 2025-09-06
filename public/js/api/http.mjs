@@ -84,3 +84,12 @@ export function putJson(path, data, opts = {}) {
     ...opts,
   });
 }
+
+export function postJson(path, data, opts = {}) {
+  return request(path, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...(opts.headers || {}) },
+    body: JSON.stringify(data ?? {}),
+    ...opts,
+  });
+}

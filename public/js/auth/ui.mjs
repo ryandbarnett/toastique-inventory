@@ -1,5 +1,6 @@
 // public/js/auth/ui.mjs
 import { fetchUsers, authBegin, authSetPin, authLogin, authLogout, fetchMe } from './api.mjs';
+import { showToast } from '../render/notify.mjs';
 
 /**
  * Auth UI module: draws the auth box and handles login/logout flows.
@@ -18,27 +19,21 @@ export function makeAuthUI({
   setEditEnabled,
   toastSelector = '#notify',
 } = {}) {
-  function showToast(msg) {
-    const el = document.querySelector(toastSelector);
-    if (!el) return;
-    el.textContent = msg;
-    el.style.display = 'block';
-    clearTimeout(showToast._t);
-    showToast._t = setTimeout(() => { el.style.display = 'none'; }, 1800);
-  }
+  // Using shared notifier from render/notify.mjs
 
   function buildModal() {
     const wrapper = document.createElement('div');
     wrapper.className = '__modal';
     wrapper.innerHTML = `
       <div class="__backdrop" style="position:fixed;inset:0;background:rgba(0,0,0,0.35);"></div>
-      <div class="__content" style="position:fixed;inset:0;display:flex;align-items:center;justify-content:center;">
+      <div class="__content" role="dialog" aria-modal="true" style="position:fixed;inset:0;display:flex;align-items:center;justify-content:center;">
         <div style="background:#fff;max-width:420px;width:92%;padding:16px;border-radius:8px;box-shadow:0 6px 16px rgba(0,0,0,0.25);">
           <div class="_body"></div>
         </div>
       </div>
     `;
     wrapper.querySelector('.__backdrop').addEventListener('click', () => wrapper.remove());
+    wrapper.addEventListener('keydown', (e) => { if (e.key === 'Escape') wrapper.remove(); });
     document.body.appendChild(wrapper);
     return wrapper;
   }
@@ -64,6 +59,7 @@ export function makeAuthUI({
       });
       body.innerHTML = '<h3>Select your name</h3>';
       body.appendChild(ul);
+      ul.querySelector('button')?.focus();
     } catch (e) {
       console.error(e);
       showToast('Failed to load users');
@@ -101,10 +97,14 @@ export function makeAuthUI({
       form.querySelector('._cancel').addEventListener('click', () => modal.remove());
       form.addEventListener('submit', async (e) => {
         e.preventDefault();
+        if (form._busy) return;
         const pin = form.querySelector('._pin')?.value?.trim();
         if (!/^\d{4}$/.test(pin)) return showToast('PIN must be 4 digits.');
         try {
-          // Perform auth (these return only {id,name})
+          form._busy = true;
+          const submitBtn = form.querySelector('button[type="submit"]');
+          const prev = submitBtn?.textContent;
+          if (submitBtn) { submitBtn.textContent = 'Working…'; submitBtn.disabled = true; }
           if (info.needsPinSetup) {
             const confirm = form.querySelector('._confirm')?.value?.trim();
             if (confirm !== pin) return showToast('PIN mismatch.');
@@ -112,20 +112,23 @@ export function makeAuthUI({
           } else {
             await authLogin(user.id, pin);
           }
-
-          // 🔁 Fetch the full user (with role) and broadcast
           const me = await fetchMe(); // { id, name, role }
           setCurrentUser(me);
           window.dispatchEvent(new CustomEvent('auth:changed', { detail: me }));
 
           modal.remove();
-          render(); // refresh auth box
+          render();
           setEditEnabled(true);
         } catch (err) {
           console.error(err);
           showToast('Login failed');
+        } finally {
+          form._busy = false;
+          const submitBtn = form.querySelector('button[type="submit"]');
+          if (submitBtn && prev) { submitBtn.textContent = prev; submitBtn.disabled = false; }
         }
       });
+      form.querySelector('._pin')?.focus();
     } catch (e) {
       console.error(e);
       showToast('Auth failed');
@@ -148,6 +151,7 @@ export function makeAuthUI({
           window.dispatchEvent(new CustomEvent('auth:changed', { detail: null }));
           render();
           setEditEnabled(false);
+          showToast('Logged out');
         } catch (e) { console.error(e); }
       });
       authbox.appendChild(span);
