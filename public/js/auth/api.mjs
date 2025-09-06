@@ -8,7 +8,7 @@ export async function fetchUsers() {
 }
 
 export async function fetchMe() {
-  const res = await fetch('/api/auth/me');
+  const res = await fetch('/api/auth/me', { credentials: 'include' });
   if (!res.ok) throw new Error('Failed to load session');
   const { authenticated, user } = await res.json();
   return authenticated ? user : null;

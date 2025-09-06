@@ -8,6 +8,8 @@ import { installAuth } from './packages/auth/src/index.mjs'
 import { makeErrorHandler, notFound } from './lib/http/errors.mjs'
 import { loadConfig } from './lib/config.mjs'
 import { makeJuicesRouter, makeHealthRouter } from './lib/http/routes/index.mjs'
+import { setPar } from './lib/service/juices.js'
+
 
 /**
  * @param {{ dbPath?: string, seed?: boolean }} opts
@@ -27,7 +29,7 @@ export function createApp({ dbPath = 'db.sqlite', seed = false, authSecurity } =
   const users  = makeUserRepo(db)
 
   // --- Auth: one-liner bootstrap
-  const { requireAuth: authRequired } = installAuth(app, {
+  const { requireAuth: authRequired, requireRoleAdmin, session } = installAuth(app, {
     userRepo: users,
     env: process.env,
     security: authSecurity, // allow test override from tests/helpers
@@ -40,6 +42,23 @@ export function createApp({ dbPath = 'db.sqlite', seed = false, authSecurity } =
     usersRepo: users,
     requireAuth: authRequired,
   }))
+
+  // Admin-only: edit PAR
+  app.put('/api/v1/juices/:id/par', authRequired, requireRoleAdmin, (req, res) => {
+    const id = Number(req.params.id)
+    const parLiters = req.body?.parLiters
+    const userId = session.getUserId(req)
+    const result = setPar({
+      repo: juices,
+      users,
+      id,
+      parLiters,
+      userId,
+      now: new Date().toISOString(),
+    })
+    if (result.error) return res.status(result.error).json(result.body)
+    res.json(result.body)
+  })
 
   app.use('/api/v1', makeHealthRouter())
 

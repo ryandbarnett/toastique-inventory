@@ -20,6 +20,7 @@ export function makeFrontendController({
   let sortMode = 'name';  // 'name' | 'status'
   let sortDir  = 'asc';   // 'asc'  | 'desc'
   let currentUser = null;  // { id, name } | null
+  const isAdmin = () => currentUser?.role === 'admin';
 
   function getState() { return { sortMode, sortDir }; }
 
@@ -47,11 +48,17 @@ export function makeFrontendController({
   });
 
   function rerender() {
-    const counts = renderTable(tbody, cache, { sortMode, sortDir });
+    console.debug('rerender → currentUser:', currentUser, 'isAdmin:', currentUser?.role === 'admin');
+    const counts = renderTable(tbody, cache, { sortMode, sortDir, isAdmin: isAdmin() });
     setMeta(counts, { sortMode, sortDir });
     applySortHeaderState(thead, { sortMode, sortDir });
-    // enforce editability based on auth state
+    // enforce editability:
+    // - liters inputs require any login (existing behavior)
+    // - PAR inputs require admin
     setEditEnabled(!!currentUser);
+    tbody.querySelectorAll('.par-input, .save-par-btn').forEach(el => {
+      el.disabled = !isAdmin();
+    });
   }
 
   async function refetchAndRender() {
@@ -70,12 +77,24 @@ export function makeFrontendController({
     wireSorting(thead, { getState, onSortChange });
 
     try {
-      const u = await fetchMe();  // u = {id, name} | null
+      const u = await fetchMe();  // expect { id, name, role } after our backend change
       currentUser = u;
+      console.debug('init → fetchMe():', u);
       authUI.render();
+      // Ensure first paint respects admin flag even before data loads
+      rerender();
     } catch (err) {
       console.debug('fetchMe error:', err?.message || err);
     }
+
+    // 🔔 React to login/logout from the auth UI
+    window.addEventListener('auth:changed', async (e) => {
+      currentUser = e.detail || null; // { id, name, role } or null
+      // Paint immediately so the PAR editor toggles correctly
+      rerender();
+      // Then refresh the data (status text, updatedByName, etc.)
+      await refetchAndRender();
+    });
 
     try {
       await refetchAndRender();

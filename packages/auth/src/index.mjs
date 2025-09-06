@@ -14,6 +14,18 @@ export function requireAuth(session) {
   return makeRequireAuth(session)
 }
 
+// Simple role gate wired to the same session/userRepo
+export function makeRequireRole({ session, userRepo, role }) {
+  return async function requireRole(req, res, next) {
+    const userId = session.getUserId(req)
+    if (!userId) return res.status(401).json({ error: 'auth required' })
+    const u = await userRepo.findById(userId)
+    if (!u || u.role !== role) return res.status(403).json({ error: 'Forbidden' })
+    req.user = u
+    next()
+  }
+}
+
 /**
   * Install auth in one call:
   * - builds cookie session (reads from env via makeCookieSession defaults)
@@ -30,6 +42,7 @@ export function installAuth(app, { userRepo, env = process.env, paths, security 
   mountAuth(app, { userRepo, session, paths, security })
   return {
     requireAuth: makeRequireAuth(session),
+    requireRoleAdmin: makeRequireRole({ session, userRepo, role: 'admin' }),
     session, // exposed in case the host app needs it
   }
 }

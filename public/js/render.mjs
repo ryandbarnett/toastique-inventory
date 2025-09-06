@@ -1,9 +1,9 @@
 // public/js/render.mjs
 // Rendering + delegated events (DOM only)
 import { code3, getStatus, fmtDate } from './utils.mjs';
-import { updateLiters } from './api.mjs';
+import { updateLiters, updatePar } from './api.mjs';
 
-export function renderTable(tbody, juices, { sortMode, sortDir } = {}) {
+export function renderTable(tbody, juices, { sortMode, sortDir, isAdmin = false } = {}) {
   tbody.innerHTML = '';
 
   // Server-side sorting: render exactly in the order provided
@@ -26,7 +26,28 @@ export function renderTable(tbody, juices, { sortMode, sortDir } = {}) {
         <span class="name-code"><abbr title="${j.name}">${code3(j.name)}</abbr></span>
         <span class="name-full">${j.name}</span>
       </td>
-      <td>${j.parLiters}</td>
+      <td>
+        ${
+          isAdmin
+            ? `
+            <input
+              class="par-input"
+              type="number"
+              step="0.5"
+              min="0"
+              max="10"
+              inputmode="decimal"
+              enterkeyhint="done"
+              value="${j.parLiters}"
+              aria-label="New PAR for ${j.name}"
+              data-id="${j.id}"
+              data-name="${j.name}"
+            />
+            <button class="save-par-btn" data-id="${j.id}">Save</button>
+            `
+          : `${j.parLiters}`
+        }
+      </td>
       <td>${j.currentLiters}</td>
       <td>
         <span class="status ${statusClass}" ${shortAttr}>${status}</span>
@@ -107,6 +128,30 @@ export function wireTableInteractions(tbody, { onSaveRequest }) {
     const liters = clampLiters(input.value);
     if (liters != null) input.value = liters;
   }, true);
+
+  // 3) Admin: Save PAR ⇒ PUT ⇒ refetch
+  tbody.addEventListener('click', async (e) => {
+    const btn = e.target.closest('.save-par-btn');
+    if (!btn) return;
+    const id = Number(btn.dataset.id);
+    const row = btn.closest('tr');
+    const input = row?.querySelector(`.par-input[data-id="${id}"]`);
+    if (!input) return;
+    const par = normalizePar(input.value);
+    if (par == null) {
+      showToast('Enter a PAR between 0 and 10 (0.5 steps).');
+      return;
+    }
+    await doSavePar(btn, input, id, par, onSaveRequest);
+  });
+
+  // 4) Clamp PAR on blur to [0,10] and normalize to 0.5 increments
+  tbody.addEventListener('blur', (e) => {
+    const input = e.target.closest('.par-input');
+    if (!input) return;
+    const par = clampPar(input.value);
+    if (par != null) input.value = par;
+  }, true);
 }
 
 function normalizeLiters(raw) {
@@ -133,6 +178,42 @@ async function doSave(btn, input, id, liters, onSaveRequest) {
     await updateLiters(id, liters);
     showToast(`Updated ${input.dataset.name} to ${liters} L`);
     await onSaveRequest?.(); // controller decides: refetch & rerender
+  } catch (err) {
+    console.error(err);
+    showToast('Update failed');
+  } finally {
+    if (btn) {
+      btn.disabled = false;
+      btn.textContent = prev;
+    }
+  }
+}
+
+function normalizePar(raw) {
+  const n = Number(String(raw).trim());
+  if (!Number.isFinite(n)) return null;
+  if (n < 0 || n > 10) return null;
+  // normalize to 0.5 steps
+  return Math.round(n * 2) / 2;
+}
+
+function clampPar(raw) {
+  const n = Number(String(raw).trim());
+  if (!Number.isFinite(n)) return null;
+  const clamped = Math.min(10, Math.max(0, n));
+  return Math.round(clamped * 2) / 2;
+}
+
+async function doSavePar(btn, input, id, par, onSaveRequest) {
+  if (btn) {
+    btn.disabled = true;
+    var prev = btn.textContent;
+    btn.textContent = 'Saving…';
+  }
+  try {
+    await updatePar(id, par);
+    showToast(`Updated PAR for ${input.dataset.name} to ${par} L`);
+    await onSaveRequest?.();
   } catch (err) {
     console.error(err);
     showToast('Update failed');

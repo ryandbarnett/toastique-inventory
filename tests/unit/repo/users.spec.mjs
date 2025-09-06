@@ -7,14 +7,22 @@ describe('makeUserRepo', () => {
 
   beforeAll(() => {
     db = new Database(':memory:')
-    db.exec('CREATE TABLE users (id INTEGER PRIMARY KEY, name TEXT, pin_hash TEXT)')
+    db.exec(`
+      CREATE TABLE users (
+        id INTEGER PRIMARY KEY,
+        name TEXT NOT NULL UNIQUE,
+        pin_hash TEXT,
+        role TEXT NOT NULL DEFAULT 'staff'
+             CHECK (role IN ('staff','admin'))
+      )
+    `)
     db.exec("INSERT INTO users (id, name) VALUES (1, 'Alice')")
     users = makeUserRepo(db)
   })
 
   it('findById returns a user', () => {
     const u = users.findById(1)
-    expect(u).toMatchObject({ id: 1, name: 'Alice' })
+    expect(u).toMatchObject({ id: 1, name: 'Alice', role: 'staff' }) // default applies
   })
 
   it('listUsers returns array of users', () => {

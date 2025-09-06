@@ -142,7 +142,10 @@ export function makeAuthRouter({ userRepo, session, paths = {}, security = {} })
     const userId = session.getUserId(req)
     if (!userId) return res.json({ authenticated: false, user: null })
     const u = await userRepo.findById(userId)
-    res.json({ authenticated: !!u, user: u ? { id: u.id, name: u.name } : null })
+    res.json({
+      authenticated: !!u,
+      user: u ? { id: u.id, name: u.name, role: u.role } : null
+    })
   })
 
   r.get(P.users, async (_req, res) => {

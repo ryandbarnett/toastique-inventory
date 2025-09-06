@@ -1,5 +1,5 @@
 // public/js/auth/ui.mjs
-import { fetchUsers, authBegin, authSetPin, authLogin, authLogout } from './api.mjs';
+import { fetchUsers, authBegin, authSetPin, authLogin, authLogout, fetchMe } from './api.mjs';
 
 /**
  * Auth UI module: draws the auth box and handles login/logout flows.
@@ -104,15 +104,20 @@ export function makeAuthUI({
         const pin = form.querySelector('._pin')?.value?.trim();
         if (!/^\d{4}$/.test(pin)) return showToast('PIN must be 4 digits.');
         try {
+          // Perform auth (these return only {id,name})
           if (info.needsPinSetup) {
             const confirm = form.querySelector('._confirm')?.value?.trim();
             if (confirm !== pin) return showToast('PIN mismatch.');
-            const u = await authSetPin(user.id, pin, confirm);
-            setCurrentUser(u);
+            await authSetPin(user.id, pin, confirm);
           } else {
-            const u = await authLogin(user.id, pin);
-            setCurrentUser(u);
+            await authLogin(user.id, pin);
           }
+
+          // 🔁 Fetch the full user (with role) and broadcast
+          const me = await fetchMe(); // { id, name, role }
+          setCurrentUser(me);
+          window.dispatchEvent(new CustomEvent('auth:changed', { detail: me }));
+
           modal.remove();
           render(); // refresh auth box
           setEditEnabled(true);
@@ -140,6 +145,7 @@ export function makeAuthUI({
         try {
           await authLogout();
           setCurrentUser(null);
+          window.dispatchEvent(new CustomEvent('auth:changed', { detail: null }));
           render();
           setEditEnabled(false);
         } catch (e) { console.error(e); }
