@@ -1,4 +1,4 @@
-// public/js/render/notify.mjs
+// public/js/ui/notify.mjs
 let _t;
 export function showToast(msg) {
   const el = document.getElementById('notify');

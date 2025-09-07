@@ -1,6 +1,6 @@
 // public/js/auth/ui.mjs
 import { fetchUsers, authBegin, authSetPin, authLogin, authLogout, fetchMe } from './api.mjs';
-import { showToast } from '../render/notify.mjs';
+import { showToast } from '../ui/notify.mjs';
 import { createAuthModal } from './modal.mjs';
 
 /**
