@@ -1,3 +1,6 @@
+/* ==========================================================================
+   1. Variables
+   ========================================================================== */
 :root {
   --toastique-gold: #cfa54b;
   --toastique-green: #4a7c59;
@@ -9,7 +12,9 @@
   font-family: "Helvetica Neue", Arial, sans-serif;
 }
 
-/* Base (mobile-first) */
+/* ==========================================================================
+   2. Base
+   ========================================================================== */
 body {
   margin: 12px;
   background: var(--toastique-bg);
@@ -30,8 +35,21 @@ h1 {
   margin-top: -2px;
   margin-bottom: 14px;
 }
-
 td.muted { white-space: nowrap; }
+
+/* ==========================================================================
+   3. Layout
+   ========================================================================== */
+.site-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+/* ==========================================================================
+   4. Components
+   ========================================================================== */
 
 /* Table card */
 table {
@@ -40,7 +58,7 @@ table {
   width: 100%;
   background: #fff;
   border-radius: 12px;
-  overflow: hidden; /* keep rounded corners */
+  overflow: hidden;
   box-shadow: 0 2px 6px rgba(0,0,0,0.05);
 }
 
@@ -54,63 +72,39 @@ th {
   user-select: none;
   -webkit-tap-highlight-color: transparent;
 }
-
-/* Sortable headers (no hover; mobile-friendly) */
-th[data-sort] {
-  touch-action: manipulation;    /* reduce click delay */
-}
-th[data-sort]:active {
-  opacity: 0.9;                  /* press feedback */
-}
+th[data-sort] { touch-action: manipulation; }
+th[data-sort]:active { opacity: 0.9; }
 
 /* Sort icons */
 .sort-icon {
   display: inline-block;
   line-height: 1;
-  font-size: 1.05rem;            /* a hair bigger for touch */
+  font-size: 1.05rem;
   margin-left: 6px;
   opacity: 0.85;
-  color: rgba(255,255,255,0.9);  /* neutral hint on green header */
+  color: rgba(255,255,255,0.9);
 }
-th[data-sort] .sort-icon::after {
-  content: '↕';                  /* neutral hint for all sortable cols */
-}
-
-/* Active column shows a gold arrow */
+th[data-sort] .sort-icon::after { content: '↕'; }
 th[data-sort].active .sort-icon {
   color: var(--toastique-gold);
   opacity: 1;
   font-weight: 700;
 }
-th[data-sort].active .sort-icon::after {
-  content: '▲';                  /* ascending */
-}
-th[data-sort].active.desc .sort-icon::after {
-  content: '▼';                  /* descending */
-}
+th[data-sort].active .sort-icon::after { content: '▲'; }
+th[data-sort].active.desc .sort-icon::after { content: '▼'; }
 
 /* Cells */
 td {
   padding: 12px 10px;
   border-bottom: 1px solid var(--toastique-border);
 }
-tr:last-child td {
-  border-bottom: none;
-}
+tr:last-child td { border-bottom: none; }
+tr:active { background: #fdfcf9; }
 
-/* Subtle row highlight on tap/selection */
-tr:active {
-  background: #fdfcf9;
-}
-
-/* Numeric alignment & nowrap date */
-th:nth-child(2), td:nth-child(2),  /* PAR (L) */
-th:nth-child(3), td:nth-child(3) { /* Current (L) */
-  text-align: right;
-}
-td:nth-child(5) {                   /* Last Updated */
-  white-space: nowrap;
-}
+/* Alignment */
+th:nth-child(2), td:nth-child(2),
+th:nth-child(3), td:nth-child(3) { text-align: right; }
+td:nth-child(5) { white-space: nowrap; }
 
 /* Status chips */
 .status {
@@ -120,21 +114,9 @@ td:nth-child(5) {                   /* Last Updated */
   display: inline-block;
   font-size: 0.95rem;
 }
-.status::after {
-  content: "";
-}
-.ok {
-  background: #eaf5ee;
-  color: var(--toastique-green);
-}
-.low {
-  background: #fdf0e6;
-  color: var(--toastique-gold);
-}
-.out {
-  background: var(--toastique-red-bg);
-  color: var(--toastique-red-text);
-}
+.ok { background: #eaf5ee; color: var(--toastique-green); }
+.low { background: #fdf0e6; color: var(--toastique-gold); }
+.out { background: var(--toastique-red-bg); color: var(--toastique-red-text); }
 
 /* Actions */
 .actions {
@@ -143,42 +125,37 @@ td:nth-child(5) {                   /* Last Updated */
   align-items: center;
 }
 
-/* Number input (mobile-friendly) */
+/* Number input */
 input[type="number"] {
   width: 92px;
-  padding: 10px 10px;            /* bigger tap target */
+  padding: 10px 10px;
   border: 1px solid var(--toastique-border);
   border-radius: 8px;
   font-size: 1rem;
 }
-
-/* Hide spinners (iOS/Safari/Chrome) */
 input[type="number"]::-webkit-outer-spin-button,
 input[type="number"]::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
 input[type="number"] { appearance: textfield; }
 
-/* Button (mobile-friendly) */
+/* Buttons */
 button {
-  padding: 10px 14px;            /* larger tap target (≥44px high) */
+  padding: 10px 14px;
   border: none;
   border-radius: 8px;
   background: var(--toastique-gold);
   color: #fff;
   font-weight: 700;
   font-size: 1rem;
-  cursor: default;               /* no pointer on mobile */
+  cursor: default;
   transition: transform 0.06s ease;
   -webkit-tap-highlight-color: transparent;
 }
-button:active {
-  transform: scale(0.99);        /* press feedback */
-}
+button:active { transform: scale(0.99); }
 
 /* Notification Bubble */
-#notify { 
+#notify {
   position: fixed;
   right: 16px;
-  bottom: 16px; /* fallback */
   bottom: calc(16px + env(safe-area-inset-bottom));
   padding: 12px 16px;
   border-radius: 10px;
@@ -190,17 +167,38 @@ button:active {
   z-index: 1000;
 }
 
-/* Default: desktop/larger screens */
+/* Modal (shared) */
+.__modal { position: fixed; inset: 0; z-index: 1000; }
+.__modal .__backdrop { position: fixed; inset: 0; background: rgba(0,0,0,.35); }
+.__modal .__content { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; }
+.__modal .__panel {
+  background: #fff; max-width: 420px; width: 92%;
+  padding: 16px; border-radius: 8px; box-shadow: 0 6px 16px rgba(0,0,0,.25);
+}
+.__modal ._body { display: block; }
+
+/* Name display */
 .name-code { display: none; }
 .name-full { display: inline; }
-.name-code abbr { text-decoration: none; border-bottom: 0; }
-
-/* Default: show full label, hide short */
+.name-code abbr, .th-current abbr { text-decoration: none; border-bottom: 0; }
 .th-current .label-full { display: inline; }
 .th-current .label-short { display: none; }
-.th-current abbr { text-decoration: none; }
 
-/* Slightly roomier layout on larger screens (your laptop during dev) */
+/* ==========================================================================
+   5. Utilities
+   ========================================================================== */
+.sr-only {
+  position: absolute; width: 1px; height: 1px;
+  padding: 0; margin: -1px; overflow: hidden;
+  clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+}
+:focus-visible { outline: 2px solid var(--toastique-gold); outline-offset: 2px; }
+
+/* ==========================================================================
+   6. Media Queries
+   ========================================================================== */
+
+/* Larger screens */
 @media (min-width: 768px) {
   body { margin: 24px; }
   h1 { font-size: 1.8rem; }
@@ -209,56 +207,43 @@ button:active {
   button { padding: 8px 12px; }
 }
 
-/* Mobile: no horizontal scroll + short header label */
+/* Mobile (≤560px) */
 @media (max-width: 560px) {
-  /* Predictable widths + no overflow */
   table { table-layout: fixed; max-width: 100%; }
+  table th:nth-child(2), table td:nth-child(2),
+  table th:nth-child(5), table td:nth-child(5) { display: none; }
 
-  /* Hide PAR (col 2) and Updated (col 5) */
-  table th:nth-child(2),
-  table td:nth-child(2),
-  table th:nth-child(5),
-  table td:nth-child(5) {
-    display: none;
-  }
-
-  /* Name column: show 3-letter code, hide full name, fix width */
-  .name-code {
-    display: inline;
-    font-weight: 700;
-    letter-spacing: 0.3px;
-  }
+  .name-code { display: inline; font-weight: 700; letter-spacing: 0.3px; }
   .name-full { display: none; }
   th:first-child, td:first-child { width: 12%; text-align: center; }
 
-  /* Swap "Current (L)" → "L" */
   .th-current .label-full { display: none; }
   .th-current .label-short { display: inline; }
 
-  /* Only shrink/replace BELOW PAR (i.e., .low) */
-  .status.low {
-    font-size: 0;              /* hide full "BELOW PAR" text node */
-  }
-  .status.low::after {
-    content: attr(data-short); /* "LOW" from data-short */
-    font-size: 14px;
-    font-weight: 600;
-  }
+  .status.low { font-size: 0; }
+  .status.low::after { content: attr(data-short); font-size: 14px; font-weight: 600; }
+
   .actions { gap: 6px; }
   input[type="number"] { width: 72px; }
   button { padding: 6px 10px; }
-  .sort-icon { margin-left: 0px; }
-  .sort-icon::after { font-size: .75rem }
-  /* Optional: set rough widths for remaining columns to avoid jank */
-  th:nth-child(3), td:nth-child(3) { width: 7%; } /* L */
-  th:nth-child(4), td:nth-child(4) { width: 15%; } /* Status */
-  th:nth-child(6), td:nth-child(6) { width: 28%; } /* Update */
+  .sort-icon { margin-left: 0; }
+  .sort-icon::after { font-size: .75rem; }
+
+  th:nth-child(3), td:nth-child(3) { width: 7%; }
+  th:nth-child(4), td:nth-child(4) { width: 15%; }
+  th:nth-child(6), td:nth-child(6) { width: 28%; }
 }
 
-/* Ultra-narrow phones */
+/* Ultra-narrow (≤360px) */
 @media (max-width: 360px) {
   input[type="number"] { width: 64px; }
   .status { font-size: 0.8rem; }
 }
 
+/* ==========================================================================
+   7. User Preferences
+   ========================================================================== */
 @media (hover: hover) { button { cursor: pointer; } }
+@media (prefers-reduced-motion: reduce) {
+  * { animation: none !important; transition: none !important; }
+}

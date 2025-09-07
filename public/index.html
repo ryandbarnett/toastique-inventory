@@ -3,31 +3,54 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta name="description" content="Toastique PAR inventory: track current liters, set PAR, and update stock quickly." />
+  <meta name="color-scheme" content="light dark" />
   <title>Toastique Inventory</title>
   <link rel="stylesheet" href="/style.css" />
+  <!-- Optional: favicon/manifest -->
+  <!-- <link rel="icon" href="/favicon.ico"> -->
+  <!-- <link rel="manifest" href="/site.webmanifest"> -->
 </head>
 <body>
-  <h1>Balboa Island Toastique Juice Inventory</h1>
-  <div id="authbox" class="authbox" style="float:right;"></div>
-  <p class="muted">Periodic Automatic Replenishment (PAR) = Target stock level to keep on hand</p>
-  <div id="meta" class="muted"></div>
-  <table>
-    <thead>
-      <tr>
-        <th data-sort="name">Juice <span class="sort-icon"></span></th>
-        <th>PAR (L)</th>
-        <th class="th-current">
-          <span class="label-full">Current (L)</span>
-          <span class="label-short"><abbr title="Current liters">L</abbr></span>
-        </th>
-        <th data-sort="status">Status <span class="sort-icon"></span></th>
-        <th>Updated</th>
-        <th>Update</th>
-      </tr>
-    </thead>
-    <tbody id="tb"></tbody>
-  </table>
-  <div id="notify"></div>
+  <header class="site-header">
+    <h1>Balboa Island Toastique Juice Inventory</h1>
+    <div id="authbox" class="authbox"></div>
+  </header>
+
+  <main id="app" class="container">
+    <p class="muted">
+      Periodic Automatic Replenishment (PAR) = Target stock level to keep on hand
+    </p>
+
+    <!-- Live summary of counts & sort state -->
+    <div id="meta" class="muted" aria-live="polite"></div>
+
+    <table aria-describedby="meta">
+      <caption class="sr-only">Juice inventory table</caption>
+      <thead>
+        <tr>
+          <th scope="col" data-sort="name">Juice <span class="sort-icon" aria-hidden="true"></span></th>
+          <th scope="col">PAR (L)</th>
+          <th scope="col" class="th-current">
+            <span class="label-full">Current (L)</span>
+            <span class="label-short"><abbr title="Current liters">L</abbr></span>
+          </th>
+          <th scope="col" data-sort="status">Status <span class="sort-icon" aria-hidden="true"></span></th>
+          <th scope="col">Updated</th>
+          <th scope="col">Update</th>
+        </tr>
+      </thead>
+      <tbody id="tb"></tbody>
+    </table>
+
+    <!-- App-wide toast; JS also sets role/aria-live defensively -->
+    <div id="notify" role="status" aria-live="polite"></div>
+
+    <noscript>
+      <p class="muted">This app requires JavaScript to load inventory and save updates.</p>
+    </noscript>
+  </main>
+
   <script type="module" src="/app.js"></script>
 </body>
 </html>

@@ -5,9 +5,9 @@ export function createAuthModal() {
   const wrapper = document.createElement('div');
   wrapper.className = '__modal';
   wrapper.innerHTML = `
-    <div class="__backdrop" style="position:fixed;inset:0;background:rgba(0,0,0,0.35);"></div>
-    <div class="__content" role="dialog" aria-modal="true" style="position:fixed;inset:0;display:flex;align-items:center;justify-content:center;">
-      <div style="background:#fff;max-width:420px;width:92%;padding:16px;border-radius:8px;box-shadow:0 6px 16px rgba(0,0,0,0.25);">
+    <div class="__backdrop"></div>
+    <div class="__content" role="dialog" aria-modal="true">
+      <div class="__panel">
         <div class="_body"></div>
       </div>
     </div>
