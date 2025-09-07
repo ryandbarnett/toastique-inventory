@@ -1,5 +1,5 @@
 // public/js/controller/view.mjs
-import { renderTable, applySortHeaderState } from '../render.mjs';
+import { renderTable, applySortHeaderState } from '../render/index.mjs';
 import { setMeta } from './meta.mjs';
 import { setEditEnabled, applyAdminGates } from './permissions.mjs';
 

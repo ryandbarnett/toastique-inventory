@@ -132,10 +132,30 @@ input[type="number"] {
   border: 1px solid var(--toastique-border);
   border-radius: 8px;
   font-size: 1rem;
+  background: #fff;
+  color: var(--toastique-gray);
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
 }
+input[type="number"]:focus {
+  border-color: var(--toastique-gold);
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(207, 165, 75, 0.25);
+}
+input[type="number"]:disabled {
+  background: #f9f9f7;
+  color: #bbb;
+}
+
+/* Hide spinners (iOS/Safari/Chrome) */
 input[type="number"]::-webkit-outer-spin-button,
-input[type="number"]::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
-input[type="number"] { appearance: textfield; }
+input[type="number"]::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+input[type="number"] {
+  appearance: textfield;
+}
+
 
 /* Buttons */
 button {
@@ -147,10 +167,31 @@ button {
   font-weight: 700;
   font-size: 1rem;
   cursor: default;
-  transition: transform 0.06s ease;
+  transition: transform 0.06s ease, background-color 0.15s ease, box-shadow 0.15s ease;
   -webkit-tap-highlight-color: transparent;
 }
-button:active { transform: scale(0.99); }
+
+button:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(207, 165, 75, 0.4); /* soft gold glow */
+}
+
+button:hover {
+  background: #b88f3e; /* slightly darker gold */
+}
+
+button:active {
+  transform: scale(0.98); /* a touch more feedback */
+}
+
+button:disabled {
+  background: #e6d5a8;
+  color: #fdfbf6;
+  cursor: not-allowed;
+  opacity: 0.7;
+  box-shadow: none;
+}
+
 
 /* Notification Bubble */
 #notify {
