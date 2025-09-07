@@ -10,7 +10,9 @@ export function setMeta(metaEl, { total, below, out, stale }, { sortMode, sortDi
     `${out} out`,
   ];
   if (stale > 0) {
-    parts.push(`⚠️ ${stale} stale`);
+    parts.push(
+      `<span class="stale-meta"><span class="stale-icon">⚠️</span> ${stale} stale</span>`
+    );
   }
-  metaEl.textContent = `${parts.join(' • ')} — sorted by ${sortLabel} (${arrow})`;
+  metaEl.innerHTML = `${parts.join(' • ')} — sorted by ${sortLabel} (${arrow})`;
 }

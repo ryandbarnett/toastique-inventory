@@ -108,13 +108,22 @@ td:nth-child(5) { white-space: nowrap; }
 
 /* Stale row (last update > 24h) */
 tr.stale {
-  background: #fff6e0; /* pale warm amber */
+  background: #e8f0fe; /* soft info blue */
 }
 tr.stale td {
-  color: #4f4a3f;      /* slightly muted text so chips still pop */
+  color: #1a3e70;      /* deep blue text for contrast */
 }
 tr.stale td .status {  /* keep status chips readable */
-  filter: saturate(1.1) contrast(1.05);
+  filter: none;
+}
+/* Stale warning icon */
+.stale-icon {
+  color: #1a3e70; /* same deep blue as stale text */
+}
+/* Stale segment in meta line */
+.stale-meta {
+  color: #1a3e70;   /* match stale row text */
+  font-weight: 700; /* bold whole segment */
 }
 
 /* Status chips */
