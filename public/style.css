@@ -106,6 +106,17 @@ th:nth-child(2), td:nth-child(2),
 th:nth-child(3), td:nth-child(3) { text-align: right; }
 td:nth-child(5) { white-space: nowrap; }
 
+/* Stale row (last update > 24h) */
+tr.stale {
+  background: #fff6e0; /* pale warm amber */
+}
+tr.stale td {
+  color: #4f4a3f;      /* slightly muted text so chips still pop */
+}
+tr.stale td .status {  /* keep status chips readable */
+  filter: saturate(1.1) contrast(1.05);
+}
+
 /* Status chips */
 .status {
   font-weight: 600;

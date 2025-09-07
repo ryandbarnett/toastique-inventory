@@ -1,5 +1,5 @@
 // public/js/render/table.mjs
-import { code3, getStatus, fmtDate } from '../utils.mjs';
+import { code3, getStatus, fmtDate, isStale } from '../utils.mjs';
 import { LITERS_MIN, LITERS_MAX, LITERS_STEP, PAR_MIN, PAR_MAX, PAR_STEP } from './config.mjs';
 
 export function renderTable(tbody, juices, { isAdmin = false } = {}) {
@@ -16,6 +16,7 @@ export function renderTable(tbody, juices, { isAdmin = false } = {}) {
 
   let below = 0;
   let out = 0;
+  let stale = 0;
 
   for (const j of juices) {
     const status = getStatus(j);
@@ -23,6 +24,11 @@ export function renderTable(tbody, juices, { isAdmin = false } = {}) {
     if (status === 'OUT') out++;
 
     const tr = document.createElement('tr');
+    // mark stale rows (>24h since lastUpdated)
+    if (isStale(j.lastUpdated)) {
+      tr.classList.add('stale');
+      stale++;
+    }
     tr.innerHTML = rowHTML(j, status, isAdmin);
     frag.appendChild(tr);
 
@@ -34,7 +40,7 @@ export function renderTable(tbody, juices, { isAdmin = false } = {}) {
   }
 
   tbody.appendChild(frag);
-  return { below, out, total: juices.length };
+  return { below, out, total: juices.length, stale };
 }
 
 function rowHTML(j, status, isAdmin) {

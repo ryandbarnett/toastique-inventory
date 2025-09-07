@@ -56,3 +56,10 @@ export function fmtDate(iso) {
   }
   return fmtDate._fmt.format(d);
 }
+
+export function isStale(iso, hours = 24) {
+  if (!iso) return true;
+  const d = new Date(iso);
+  if (Number.isNaN(d.valueOf())) return true;
+  return (Date.now() - d.getTime()) > hours * 60 * 60 * 1000;
+}
