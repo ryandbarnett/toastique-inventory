@@ -1,6 +1,7 @@
 // public/js/auth/ui.mjs
 import { fetchUsers, authBegin, authSetPin, authLogin, authLogout, fetchMe } from './api.mjs';
 import { showToast } from '../render/notify.mjs';
+import { createAuthModal } from './modal.mjs';
 
 /**
  * Auth UI module: draws the auth box and handles login/logout flows.
@@ -10,128 +11,57 @@ import { showToast } from '../render/notify.mjs';
  * @param {() => any}    opts.getCurrentUser
  * @param {(u:any)=>void}opts.setCurrentUser
  * @param {(enabled:boolean)=>void} opts.setEditEnabled
- * @param {string} [opts.toastSelector='#notify']
  */
 export function makeAuthUI({
   authbox,
   getCurrentUser,
   setCurrentUser,
   setEditEnabled,
-  toastSelector = '#notify',
 } = {}) {
-  // Using shared notifier from render/notify.mjs
-
-  function buildModal() {
-    const wrapper = document.createElement('div');
-    wrapper.className = '__modal';
-    wrapper.innerHTML = `
-      <div class="__backdrop" style="position:fixed;inset:0;background:rgba(0,0,0,0.35);"></div>
-      <div class="__content" role="dialog" aria-modal="true" style="position:fixed;inset:0;display:flex;align-items:center;justify-content:center;">
-        <div style="background:#fff;max-width:420px;width:92%;padding:16px;border-radius:8px;box-shadow:0 6px 16px rgba(0,0,0,0.25);">
-          <div class="_body"></div>
-        </div>
-      </div>
-    `;
-    wrapper.querySelector('.__backdrop').addEventListener('click', () => wrapper.remove());
-    wrapper.addEventListener('keydown', (e) => { if (e.key === 'Escape') wrapper.remove(); });
-    document.body.appendChild(wrapper);
-    return wrapper;
-  }
-
   async function openLoginModal() {
     try {
       const users = await fetchUsers();
-      const modal = buildModal();
-      const body = modal.querySelector('._body');
+      const modal = createAuthModal();
 
-      const ul = document.createElement('ul');
-      ul.style.listStyle = 'none';
-      ul.style.padding = '0';
-      users.forEach(u => {
-        const li = document.createElement('li');
-        const a = document.createElement('button');
-        a.textContent = u.name;
-        a.style.display = 'block';
-        a.style.margin = '6px 0';
-        a.addEventListener('click', () => pickUser(u, modal));
-        li.appendChild(a);
-        ul.appendChild(li);
+      modal.mountUserPicker(users, async (user) => {
+        try {
+          const info = await authBegin(user.id); // { name, needsPinSetup }
+          modal.mountPinForm(
+            { name: info.name, needsPinSetup: info.needsPinSetup },
+            async ({ pin, confirm, needsPinSetup }) => {
+              // Validate PIN
+              if (!/^\d{4}$/.test(pin || '')) { showToast('PIN must be 4 digits.'); return; }
+              if (needsPinSetup && pin !== (confirm || '')) { showToast('PIN mismatch.'); return; }
+
+              try {
+                if (needsPinSetup) {
+                  await authSetPin(user.id, pin, confirm);
+                } else {
+                  await authLogin(user.id, pin);
+                }
+
+                const me = await fetchMe(); // { id, name, role }
+                setCurrentUser(me);
+                window.dispatchEvent(new CustomEvent('auth:changed', { detail: me }));
+
+                modal.close();
+                render();
+                setEditEnabled(true);
+              } catch (err) {
+                console.error(err);
+                showToast('Login failed');
+              }
+            },
+            () => { /* cancel handled inside modal.close() */ }
+          );
+        } catch (e) {
+          console.error(e);
+          showToast('Auth failed');
+        }
       });
-      body.innerHTML = '<h3>Select your name</h3>';
-      body.appendChild(ul);
-      ul.querySelector('button')?.focus();
     } catch (e) {
       console.error(e);
       showToast('Failed to load users');
-    }
-  }
-
-  async function pickUser(user, modal) {
-    try {
-      const info = await authBegin(user.id); // { name, needsPinSetup }
-      const body = modal.querySelector('.__content ._body');
-      body.innerHTML = '';
-
-      const h3 = document.createElement('h3');
-      h3.textContent = `Hi, ${info.name}`;
-      body.appendChild(h3);
-
-      const form = document.createElement('form');
-      form.innerHTML = `
-        <label style="display:block;margin:8px 0;">
-          Enter 4-digit PIN
-          <input required maxlength="4" inputmode="numeric" pattern="\\d{4}" class="_pin" />
-        </label>
-        ${info.needsPinSetup ? `
-        <label style="display:block;margin:8px 0;">
-          Confirm PIN
-          <input required maxlength="4" inputmode="numeric" pattern="\\d{4}" class="_confirm" />
-        </label>` : ''}
-        <div style="margin-top:10px;">
-          <button type="submit">${info.needsPinSetup ? 'Set PIN & Login' : 'Login'}</button>
-          <button type="button" class="_cancel">Cancel</button>
-        </div>
-      `;
-      body.appendChild(form);
-
-      form.querySelector('._cancel').addEventListener('click', () => modal.remove());
-      form.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        if (form._busy) return;
-        const pin = form.querySelector('._pin')?.value?.trim();
-        if (!/^\d{4}$/.test(pin)) return showToast('PIN must be 4 digits.');
-        try {
-          form._busy = true;
-          const submitBtn = form.querySelector('button[type="submit"]');
-          const prev = submitBtn?.textContent;
-          if (submitBtn) { submitBtn.textContent = 'Working…'; submitBtn.disabled = true; }
-          if (info.needsPinSetup) {
-            const confirm = form.querySelector('._confirm')?.value?.trim();
-            if (confirm !== pin) return showToast('PIN mismatch.');
-            await authSetPin(user.id, pin, confirm);
-          } else {
-            await authLogin(user.id, pin);
-          }
-          const me = await fetchMe(); // { id, name, role }
-          setCurrentUser(me);
-          window.dispatchEvent(new CustomEvent('auth:changed', { detail: me }));
-
-          modal.remove();
-          render();
-          setEditEnabled(true);
-        } catch (err) {
-          console.error(err);
-          showToast('Login failed');
-        } finally {
-          form._busy = false;
-          const submitBtn = form.querySelector('button[type="submit"]');
-          if (submitBtn && prev) { submitBtn.textContent = prev; submitBtn.disabled = false; }
-        }
-      });
-      form.querySelector('._pin')?.focus();
-    } catch (e) {
-      console.error(e);
-      showToast('Auth failed');
     }
   }
 
@@ -139,9 +69,11 @@ export function makeAuthUI({
     if (!authbox) return;
     const currentUser = getCurrentUser();
     authbox.innerHTML = '';
+
     if (currentUser) {
       const span = document.createElement('span');
       span.textContent = `Logged in as ${currentUser.name} • `;
+
       const btn = document.createElement('button');
       btn.textContent = 'Logout';
       btn.addEventListener('click', async () => {
@@ -152,8 +84,11 @@ export function makeAuthUI({
           render();
           setEditEnabled(false);
           showToast('Logged out');
-        } catch (e) { console.error(e); }
+        } catch (e) {
+          console.error(e);
+        }
       });
+
       authbox.appendChild(span);
       authbox.appendChild(btn);
     } else {
